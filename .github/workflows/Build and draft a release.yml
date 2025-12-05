@@ -8,6 +8,7 @@ jobs:
       BUILD_PATH: ./build/neo-bpsys-wpf
       PROJ_PATH: ./neo-bpsys-wpf/neo-bpsys-wpf.csproj
       INSTALLER_OUTPUT: ./build/neo-bpsys-wpf_Installer.msi
+      WIX_ARCH: x64
 
     runs-on: windows-latest
 
@@ -74,7 +75,7 @@ jobs:
         $productWxs = @"
         <?xml version="1.0" encoding="UTF-8"?>
         <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-          <Product Id="*" Name="bpsys-wpf-idvevent" Manufacturer="PLFJY" Version="${{ env.VERSION }}" Language="1033" UpgradeCode="{980E3856-4BEE-470D-A73D-6507CA035EF8}" Codepage="936">
+          <Product Id="*" Name="bpsys-wpf-idvevent" Manufacturer="PLFJY" Version="${{ env.VERSION }}" Language="2052" UpgradeCode="{980E3856-4BEE-470D-A73D-6507CA035EF8}" Codepage="936">
             <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" SummaryCodepage="936" />
             <MajorUpgrade DowngradeErrorMessage="已存在更高版本，无法降级安装。" />
             <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
@@ -96,10 +97,10 @@ jobs:
         Set-Content -Path product.wxs -Value $productWxs -Encoding UTF8
         
         Write-Host "Running Candle..."
-        & "$env:WIX_BIN\candle.exe" -dSourceDir="${{ env.BUILD_PATH }}" harvest.wxs product.wxs
+        & "$env:WIX_BIN\candle.exe" -arch $env:WIX_ARCH -ext WixUIExtension -dSourceDir="${{ env.BUILD_PATH }}" harvest.wxs product.wxs
         
         Write-Host "Running Light..."
-        & "$env:WIX_BIN\light.exe" harvest.wixobj product.wixobj -ext WixUIExtension -out "${{ env.INSTALLER_OUTPUT }}"
+        & "$env:WIX_BIN\light.exe" -ext WixUIExtension harvest.wixobj product.wixobj -out "${{ env.INSTALLER_OUTPUT }}"
 
     - name: Verify MSI exists
       shell: pwsh
