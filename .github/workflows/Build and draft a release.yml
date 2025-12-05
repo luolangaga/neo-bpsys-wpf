@@ -70,7 +70,12 @@ jobs:
     - name: Pack MSI (WiX)
       shell: pwsh
       run: |
-        & "$env:WIX_BIN\heat.exe" dir "${{ env.BUILD_PATH }}" -cg FilesGroup -dr INSTALLDIR -sreg -srd -gg -var var.SourceDir -o harvest.wxs
+        & "$env:WIX_BIN\heat.exe" dir "${{ env.BUILD_PATH }}" -cg FilesGroup -dr INSTALLDIR -sreg -srd -ag -var var.SourceDir -o harvest.wxs
+        
+        Write-Host "--- harvest.wxs content ---"
+        Get-Content harvest.wxs | Select-Object -First 50
+        Write-Host "--- end of preview ---"
+
         $productWxs = @"
         <?xml version="1.0" encoding="UTF-8"?>
         <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
@@ -94,7 +99,11 @@ jobs:
         </Wix>
         "@
         Set-Content -Path product.wxs -Value $productWxs -Encoding UTF8
+        
+        Write-Host "Running Candle..."
         & "$env:WIX_BIN\candle.exe" -dSourceDir="${{ env.BUILD_PATH }}" harvest.wxs product.wxs
+        
+        Write-Host "Running Light..."
         & "$env:WIX_BIN\light.exe" harvest.wixobj product.wixobj -ext WixUIExtension -out "${{ env.INSTALLER_OUTPUT }}"
 
     - name: Verify MSI exists
