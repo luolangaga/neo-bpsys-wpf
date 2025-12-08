@@ -658,42 +658,73 @@ public class CanvasAdorner : Adorner
             return;
         }
 
+        var showH = bestHGap > 0;
+        var showV = bestVGap > 0;
+
         if (_hGuideLine != null)
         {
-            _hGuideLine.X1 = h1.X;
-            _hGuideLine.Y1 = h1.Y;
-            _hGuideLine.X2 = h2.X;
-            _hGuideLine.Y2 = h2.Y;
-            _hGuideLine.Visibility = Visibility.Visible;
+            if (showH)
+            {
+                _hGuideLine.X1 = h1.X;
+                _hGuideLine.Y1 = h1.Y;
+                _hGuideLine.X2 = h2.X;
+                _hGuideLine.Y2 = h2.Y;
+                _hGuideLine.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                _hGuideLine.Visibility = Visibility.Collapsed;
+            }
         }
 
         if (_vGuideLine != null)
         {
-            _vGuideLine.X1 = v1.X;
-            _vGuideLine.Y1 = v1.Y;
-            _vGuideLine.X2 = v2.X;
-            _vGuideLine.Y2 = v2.Y;
-            _vGuideLine.Visibility = Visibility.Visible;
+            if (showV)
+            {
+                _vGuideLine.X1 = v1.X;
+                _vGuideLine.Y1 = v1.Y;
+                _vGuideLine.X2 = v2.X;
+                _vGuideLine.Y2 = v2.Y;
+                _vGuideLine.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                _vGuideLine.Visibility = Visibility.Collapsed;
+            }
         }
 
         if (_hDistanceText != null)
         {
-            _hDistanceText.Text = Math.Round(bestHGap).ToString() + " px";
-            var hxMidX = (h1.X + h2.X) / 2;
-            var hxMidY = (h1.Y + h2.Y) / 2;
-            Canvas.SetLeft(_hDistanceText, hxMidX - 20);
-            Canvas.SetTop(_hDistanceText, hxMidY - 18);
-            _hDistanceText.Visibility = Visibility.Visible;
+            if (showH)
+            {
+                _hDistanceText.Text = Math.Round(bestHGap).ToString() + " px";
+                var hxMidX = (h1.X + h2.X) / 2;
+                var hxMidY = (h1.Y + h2.Y) / 2;
+                Canvas.SetLeft(_hDistanceText, hxMidX - 20);
+                Canvas.SetTop(_hDistanceText, hxMidY - 18);
+                _hDistanceText.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                _hDistanceText.Visibility = Visibility.Collapsed;
+            }
         }
 
         if (_vDistanceText != null)
         {
-            _vDistanceText.Text = Math.Round(bestVGap).ToString() + " px";
-            var vxMidX = (v1.X + v2.X) / 2;
-            var vxMidY = (v1.Y + v2.Y) / 2;
-            Canvas.SetLeft(_vDistanceText, vxMidX + 4);
-            Canvas.SetTop(_vDistanceText, vxMidY - 10);
-            _vDistanceText.Visibility = Visibility.Visible;
+            if (showV)
+            {
+                _vDistanceText.Text = Math.Round(bestVGap).ToString() + " px";
+                var vxMidX = (v1.X + v2.X) / 2;
+                var vxMidY = (v1.Y + v2.Y) / 2;
+                Canvas.SetLeft(_vDistanceText, vxMidX + 4);
+                Canvas.SetTop(_vDistanceText, vxMidY - 10);
+                _vDistanceText.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                _vDistanceText.Visibility = Visibility.Collapsed;
+            }
         }
     }
 
