@@ -37,6 +37,7 @@ public partial class TeamInfoPageViewModel : ViewModelBase
 
         _sharedDataService = sharedDataService1;
         _asgService = asgService;
+        _messageBoxService = messageBoxService;
     }
 
     public TeamInfoViewModel MainTeamInfoViewModel { get; }
@@ -48,6 +49,7 @@ public partial class TeamInfoPageViewModel : ViewModelBase
 
     private readonly ISharedDataService _sharedDataService;
     private readonly IASGService _asgService;
+    private readonly IMessageBoxService _messageBoxService;
 
     
 
@@ -80,6 +82,15 @@ public partial class TeamInfoPageViewModel : ViewModelBase
     private bool _isMatchResultsNotEmpty;
 
     
+
+    [ObservableProperty]
+    private string _newMatchResult = "Draw";
+
+    [ObservableProperty]
+    private int _newMatchScore = 0;
+
+    [ObservableProperty]
+    private int _newHunScore = 0;
 
     [RelayCommand]
     private async Task SearchEventsAsync()
@@ -144,6 +155,85 @@ public partial class TeamInfoPageViewModel : ViewModelBase
         await LoadMatchesAsync();
     }
 
+    [RelayCommand]
+    private async Task CreateSurPlayersMatchRecordsAsync()
+    {
+        if (SelectedEvent == null)
+        {
+            return;
+        }
+        if (!Guid.TryParse(SelectedEvent.Id, out var eventId))
+        {
+            return;
+        }
+        var tasks = new List<Task<bool>>();
+        foreach (var vm in OnFieldSurPlayerViewModels)
+        {
+            var member = vm.ThisPlayer.Member;
+            if (!member.IsOnField) continue;
+            if (member.AsgPlayerId == null) continue;
+            var payload = new AsgPlayerMatchCreateRequest
+            {
+                PlayerId = member.AsgPlayerId.Value,
+                EventId = eventId,
+                Result = NewMatchResult,
+                Score = vm.NewScore,
+                PlayedAt = DateTime.UtcNow
+            };
+            tasks.Add(_asgService.CreatePlayerMatchAsync(payload));
+        }
+        var results = await Task.WhenAll(tasks);
+        var successCount = results.Count(r => r);
+        var total = tasks.Count;
+        if (total > 0)
+        {
+            await _messageBoxService.ShowInfoAsync($"已为{successCount}/{total}名求生者创建赛事记录");
+        }
+    }
+
+    [RelayCommand]
+    private async Task CreateHunPlayerMatchRecordAsync()
+    {
+        if (SelectedEvent == null)
+        {
+            return;
+        }
+        if (!Guid.TryParse(SelectedEvent.Id, out var eventId))
+        {
+            return;
+        }
+        var member = OnFieldHunPlayerVm.ThisPlayer.Member;
+        if (!member.IsOnField) return;
+        if (member.AsgPlayerId == null) return;
+        var payload = new AsgPlayerMatchCreateRequest
+        {
+            PlayerId = member.AsgPlayerId.Value,
+            EventId = eventId,
+            Result = GetOppositeResult(NewMatchResult),
+            Score = NewHunScore,
+            PlayedAt = DateTime.UtcNow
+        };
+        var ok = await _asgService.CreatePlayerMatchAsync(payload);
+        if (ok)
+        {
+            await _messageBoxService.ShowInfoAsync("已为监管者创建赛事记录");
+        }
+        else
+        {
+            await _messageBoxService.ShowErrorAsync("创建监管者赛事记录失败");
+        }
+    }
+
+    private static string GetOppositeResult(string result)
+    {
+        return result switch
+        {
+            "Win" => "Loss",
+            "Loss" => "Win",
+            _ => "Draw"
+        };
+    }
+
     partial void OnSelectedEventChanged(AsgEventDto? value)
     {
         MatchesPage = 1;
@@ -171,14 +261,17 @@ public partial class TeamInfoPageViewModel : ViewModelBase
         var surList = new ObservableCollection<Core.Models.Member>(Enumerable.Range(0, 4).Select(_ => new Core.Models.Member(Core.Enums.Camp.Sur)));
         var hunList = new ObservableCollection<Core.Models.Member>(new[] { new Core.Models.Member(Core.Enums.Camp.Hun) });
         var players = t.Players ?? Array.Empty<AsgPlayerDto>();
-        var names = players.Select(p => p.Name).Where(n => !string.IsNullOrWhiteSpace(n)).ToList();
-        for (var i = 0; i < Math.Min(4, names.Count); i++)
+        for (var i = 0; i < Math.Min(4, players.Length); i++)
         {
-            surList[i].Name = names[i];
+            var p = players[i];
+            surList[i].Name = p.Name ?? string.Empty;
+            if (Guid.TryParse(p.Id, out var gid)) surList[i].AsgPlayerId = gid;
         }
-        if (names.Count > 0)
+        if (players.Length > 0)
         {
-            hunList[0].Name = names[0];
+            var p = players[0];
+            hunList[0].Name = p.Name ?? string.Empty;
+            if (Guid.TryParse(p.Id, out var gid)) hunList[0].AsgPlayerId = gid;
         }
         var team = new Core.Models.Team(t.Name ?? string.Empty, t.LogoUrl ?? string.Empty, surList, hunList);
         return team;
@@ -199,6 +292,9 @@ public partial class TeamInfoPageViewModel : ViewModelBase
         public Player ThisPlayer => _sharedDataService.CurrentGame.SurPlayerList[Index];
 
         public int Index { get; }
+
+        [ObservableProperty]
+        private int _newScore;
 
         [RelayCommand]
         private void SwapMembersInPlayers(CharacterChangerCommandParameter parameter)

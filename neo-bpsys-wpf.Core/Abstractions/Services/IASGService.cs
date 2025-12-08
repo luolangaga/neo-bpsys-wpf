@@ -16,4 +16,7 @@ public interface IASGService
     Task<IReadOnlyList<AsgMatchDto>?> GetMatchesByEventAsync(Guid eventId, int page = 1, int pageSize = 50, int? groupIndex = null, string? groupLabel = null);
     Task<AsgTeamDto?> GetTeamAsync(Guid teamId);
     Task<bool> UpdateMatchScoresAsync(Guid matchId, AsgMatchScoresUpdateDto payload);
+    Task<bool> CreatePlayerMatchAsync(AsgPlayerMatchCreateRequest payload);
+    Task<AsgPlayerStatsDto?> GetMyPlayerStatsAsync();
+    Task<AsgPlayerStatsDto?> GetPlayerStatsAsync(Guid playerId);
 }

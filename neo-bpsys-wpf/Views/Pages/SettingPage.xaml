@@ -344,6 +344,10 @@
                                             Command="{Binding EditBpWindowLottieCommand}"
                                             CommandParameter="PickingBorderLottieUri"
                                             Header="待选Lottie动画" />
+                                        <MenuItem
+                                            Command="{Binding EditBpWindow3DConfigCommand}"
+                                            CommandParameter="Character3DConfigUri"
+                                            Header="角色3D配置 (JSON)" />
                                     </ContextMenu>
                                 </ui:DropDownButton.Flyout>
                             </ui:DropDownButton>

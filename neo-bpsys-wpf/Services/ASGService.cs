@@ -199,4 +199,31 @@ public class ASGService : IASGService
         var resp = await PutWithAuthAsync(url, content);
         return resp.IsSuccessStatusCode;
     }
+
+    public async Task<bool> CreatePlayerMatchAsync(AsgPlayerMatchCreateRequest payload)
+    {
+        var url = BuildUri("/api/PlayerMatches");
+        var body = JsonSerializer.Serialize(payload, new JsonSerializerOptions { DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull });
+        using var content = new StringContent(body, Encoding.UTF8, "application/json");
+        var resp = await PostWithAuthAsync(url, content);
+        return resp.IsSuccessStatusCode;
+    }
+
+    public async Task<AsgPlayerStatsDto?> GetMyPlayerStatsAsync()
+    {
+        var url = BuildUri("/api/PlayerMatches/me/stats");
+        var resp = await GetWithAuthAsync(url);
+        if (!resp.IsSuccessStatusCode) return null;
+        var json = await resp.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<AsgPlayerStatsDto>(json);
+    }
+
+    public async Task<AsgPlayerStatsDto?> GetPlayerStatsAsync(Guid playerId)
+    {
+        var url = BuildUri($"/api/PlayerMatches/{playerId}/stats");
+        var resp = await GetWithAuthAsync(url);
+        if (!resp.IsSuccessStatusCode) return null;
+        var json = await resp.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<AsgPlayerStatsDto>(json);
+    }
 }

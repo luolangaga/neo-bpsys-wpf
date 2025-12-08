@@ -116,6 +116,9 @@ public partial class BpWindowSettings : ViewModelBase
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(PickingBorderBrush))]
     private string? _pickingBorderColor = Colors.White.ToString();
 
+    [ObservableProperty]
+    private string? _character3DConfigUri;
+
     /// <summary>
     /// 文本颜色Brush
     /// </summary>
@@ -139,6 +142,9 @@ public partial class BpWindowSettings : ViewModelBase
 
     [JsonIgnore]
     public string? PickingBorderLottieFile => ImageHelper.GetUiJsonPathFromSetting(PickingBorderLottieUri, "pickingBorder");
+
+    [JsonIgnore]
+    public string? Character3DConfigFile => ImageHelper.GetUiJsonPathFromSetting(Character3DConfigUri, "character3d");
 
     [JsonIgnore]
     public List<Int32Rect> PickOcrRegions { get; set; } =

@@ -476,6 +476,19 @@ public partial class SettingPageViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private void EditBpWindow3DConfig(string arg)
+    {
+        var settings = _settingsHostService.Settings.BpWindowSettings;
+        var propertyMap = new Dictionary<string, (Action<string?>, string?)>
+        {
+            { "Character3DConfigUri", (value => settings.Character3DConfigUri = value, settings.Character3DConfigUri) }
+        };
+
+        if (!propertyMap.TryGetValue(arg, out var valueTuple)) return;
+        SetUiJson(valueTuple.Item1, valueTuple.Item2);
+    }
+
+    [RelayCommand]
     private void EditCutSceneWindowImages()
     {
         var settings = _settingsHostService.Settings.CutSceneWindowSettings;

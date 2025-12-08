@@ -54,3 +54,35 @@ public class AsgGameScoreDto
     [JsonPropertyName("home")] public int Home { get; set; }
     [JsonPropertyName("away")] public int Away { get; set; }
 }
+
+public class AsgPlayerMatchCreateRequest
+{
+    [JsonPropertyName("playerId")] public Guid PlayerId { get; set; }
+    [JsonPropertyName("eventId")] public Guid EventId { get; set; }
+    [JsonPropertyName("gameRoleId")] public Guid? GameRoleId { get; set; }
+    [JsonPropertyName("result")] public string Result { get; set; } = string.Empty;
+    [JsonPropertyName("score")] public int Score { get; set; }
+    [JsonPropertyName("playedAt")] public DateTime? PlayedAt { get; set; }
+}
+
+public class AsgPlayerStatsDto
+{
+    [JsonPropertyName("totalMatches")] public int TotalMatches { get; set; }
+    [JsonPropertyName("winRate")] public double WinRate { get; set; }
+    [JsonPropertyName("lossRate")] public double LossRate { get; set; }
+    [JsonPropertyName("drawRate")] public double DrawRate { get; set; }
+    [JsonPropertyName("recentMatches")] public AsgRecentMatchDto[] RecentMatches { get; set; } = Array.Empty<AsgRecentMatchDto>();
+}
+
+public class AsgRecentMatchDto
+{
+    [JsonPropertyName("id")] public Guid Id { get; set; }
+    [JsonPropertyName("playerId")] public Guid PlayerId { get; set; }
+    [JsonPropertyName("eventId")] public Guid EventId { get; set; }
+    [JsonPropertyName("gameRoleId")] public Guid? GameRoleId { get; set; }
+    [JsonPropertyName("result")] public string Result { get; set; } = string.Empty;
+    [JsonPropertyName("score")] public int Score { get; set; }
+    [JsonPropertyName("playedAt")] public DateTime PlayedAt { get; set; }
+    [JsonPropertyName("eventName")] public string? EventName { get; set; }
+    [JsonPropertyName("gameRoleName")] public string? GameRoleName { get; set; }
+}

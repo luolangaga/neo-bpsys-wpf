@@ -81,4 +81,12 @@ public partial class Member : ViewModelBase
     /// 选手定妆照是否有效
     /// </summary>
     public bool IsImageValid => Image != null;
+
+    private Guid? _asgPlayerId;
+
+    public Guid? AsgPlayerId
+    {
+        get => _asgPlayerId;
+        set => SetProperty(ref _asgPlayerId, value);
+    }
 }
