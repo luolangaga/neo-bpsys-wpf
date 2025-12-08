@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="neo_bpsys_wpf.Views.Pages.ExtensionPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -16,9 +16,38 @@
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
 
-    <WrapPanel Orientation="Horizontal">
-        <Border Style="{StaticResource Card}">
-            <TextBlock Text="前面的区域以后再来探索吧" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <ui:Button Margin="0,0,10,10" Command="{Binding RefreshCommand}" Content="重新扫描插件" Icon="{ui:SymbolIcon Symbol=ArrowClockwise24}" />
+        </StackPanel>
+        <Border Grid.Row="1" Style="{StaticResource Card}">
+            <ItemsControl ItemsSource="{Binding Plugins}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock FontWeight="Bold" Text="{Binding Name}" />
+                                <TextBlock Foreground="Gray" Text="{Binding Description}" />
+                                <TextBlock Foreground="Gray" Text="{Binding Author}" />
+                                <TextBlock Foreground="Gray" Text="{Binding Version}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Margin="0,0,10,0" VerticalAlignment="Center" Text="状态:" />
+                                <TextBlock Margin="0,0,10,0" VerticalAlignment="Center" Text="{Binding IsEnabled}" />
+                                <ui:Button Content="切换" Command="{Binding DataContext.ToggleCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}" CommandParameter="{Binding Id}" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </Border>
-    </WrapPanel>
+    </Grid>
 </Page>

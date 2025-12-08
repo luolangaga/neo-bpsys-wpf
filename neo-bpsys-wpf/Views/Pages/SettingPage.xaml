@@ -308,6 +308,17 @@
                                             Command="{Binding EditBpWindowImagesCommand}"
                                             CommandParameter="PickingBorderImageUri"
                                             Header="待选闪烁框" />
+<<<<<<< HEAD
+=======
+                                        <MenuItem
+                                            Command="{Binding EditBpWindowLottieCommand}"
+                                            CommandParameter="PickingBorderLottieUri"
+                                            Header="待选Lottie动画" />
+                                        <MenuItem
+                                            Command="{Binding EditBpWindow3DConfigCommand}"
+                                            CommandParameter="Character3DConfigUri"
+                                            Header="角色3D配置 (JSON)" />
+>>>>>>> 731ecb2 (feat(ASG): 添加玩家赛事记录功能及3D角色展示)
                                     </ContextMenu>
                                 </ui:DropDownButton.Flyout>
                             </ui:DropDownButton>

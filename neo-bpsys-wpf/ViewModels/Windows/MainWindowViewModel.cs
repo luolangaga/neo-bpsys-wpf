@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
@@ -15,6 +15,7 @@ using neo_bpsys_wpf.Core.Messages;
 using neo_bpsys_wpf.Core.Models;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
+using System.Collections.ObjectModel;
 using Game = neo_bpsys_wpf.Core.Models.Game;
 using Team = neo_bpsys_wpf.Core.Models.Team;
 using neo_bpsys_wpf.Core;
@@ -314,8 +315,8 @@ public partial class MainWindowViewModel :
         { GameProgress.Game3ExtraSecondHalf, "第3局加赛下半" }
     };
 
-    public List<NavigationViewItem> MenuItems { get; } =
-    [
+    public ObservableCollection<NavigationViewItem> MenuItems { get; } = new()
+    {
         new("启动页", SymbolRegular.Home24, typeof(HomePage)),
         new("队伍信息", SymbolRegular.PeopleTeam24, typeof(TeamInfoPage)),
         new("地图禁选", SymbolRegular.Map24, typeof(MapBpPage)),
@@ -325,12 +326,12 @@ public partial class MainWindowViewModel :
         new("天赋特质", SymbolRegular.PersonWalking24, typeof(TalentPage)),
         new("比分控制", SymbolRegular.NumberRow24, typeof(ScorePage)),
         new("赛后数据", SymbolRegular.TextNumberListLtr24, typeof(GameDataPage)),
-    ];
+    };
 
-    public List<NavigationViewItem> FooterMenuItems { get; } =
-    [
+    public ObservableCollection<NavigationViewItem> FooterMenuItems { get; } = new()
+    {
         new("前台管理", SymbolRegular.ShareScreenStart24, typeof(FrontManagePage)),
         new("扩展功能", SymbolRegular.AppsAddIn24, typeof(ExtensionPage)),
         new("设置", SymbolRegular.Settings24, typeof(SettingPage)),
-    ];
+    };
 }

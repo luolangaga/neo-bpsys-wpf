@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using neo_bpsys_wpf.Services;
@@ -55,6 +55,7 @@ public partial class App : Application
         })
         .ConfigureServices(services =>
         {
+            var plugins = PluginBootstrapper.DiscoverPlugins(AppDomain.CurrentDomain.BaseDirectory);
             services.AddNavigationViewPageProvider();
 
             //App Host
@@ -96,6 +97,7 @@ public partial class App : Application
             services.AddSingleton<IMessageBoxService, MessageBoxService>();
             services.AddSingleton<IInfoBarService, InfoBarService>();
             services.AddSingleton<ISnackbarService, SnackbarService>();
+            services.AddSingleton<IUiExtensionService, UiExtensionService>();
 
             //Additional Feature Services
             services.AddSingleton<IGameGuidanceService, GameGuidanceService>();
@@ -213,6 +215,13 @@ public partial class App : Application
                     DataContext = sp.GetRequiredService<SettingPageViewModel>()
                 });
             services.AddSingleton<SettingPageViewModel>();
+
+            foreach (var plugin in plugins)
+            {
+                plugin.ConfigureServices(services);
+            }
+
+            services.AddSingleton<IPluginService>(sp => new PluginService(sp, plugins));
         })
         .Build();
 
@@ -295,6 +304,10 @@ public partial class App : Application
             }
         };
         ApplicationThemeManager.Apply(ApplicationTheme.Dark);
+        var uiExt = _host.Services.GetRequiredService<IUiExtensionService>();
+        var pluginService = _host.Services.GetRequiredService<IPluginService>();
+        var context = new neo_bpsys_wpf.Core.Models.PluginContext(_host.Services, uiExt);
+        pluginService.Initialize(context);
 #if !DEBUG
             _logger.LogInformation("Update checking on start up");
             await _host.Services.GetRequiredService<IUpdaterService>().UpdateCheck(true);

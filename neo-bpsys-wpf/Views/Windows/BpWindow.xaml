@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:local="clr-namespace:neo_bpsys_wpf.Views.Windows"
+    xmlns:controls="clr-namespace:neo_bpsys_wpf.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:vm="clr-namespace:neo_bpsys_wpf.ViewModels.Windows"
@@ -349,7 +350,9 @@
             Width="140"
             Height="159"
             ab:DesignBehavior.IsDesignMode="{Binding IsDesignMode}">
-            <Image d:Source="/Assets/医生.png" Source="{Binding CurrentGame.SurPlayerList[0].PictureShown}" />
+            <controls:CharacterVisual
+                Player="{Binding CurrentGame.SurPlayerList[0]}"
+                ConfigPath="{Binding Settings.Character3DConfigFile}" />
         </Border>
         <Border
             Name="SurPick1"
@@ -358,7 +361,9 @@
             Width="140"
             Height="159"
             ab:DesignBehavior.IsDesignMode="{Binding IsDesignMode}">
-            <Image d:Source="/Assets/医生.png" Source="{Binding CurrentGame.SurPlayerList[1].PictureShown}" />
+            <controls:CharacterVisual
+                Player="{Binding CurrentGame.SurPlayerList[1]}"
+                ConfigPath="{Binding Settings.Character3DConfigFile}" />
         </Border>
         <Border
             Name="SurPick2"
@@ -367,7 +372,9 @@
             Width="140"
             Height="159"
             ab:DesignBehavior.IsDesignMode="{Binding IsDesignMode}">
-            <Image d:Source="/Assets/医生.png" Source="{Binding CurrentGame.SurPlayerList[2].PictureShown}" />
+            <controls:CharacterVisual
+                Player="{Binding CurrentGame.SurPlayerList[2]}"
+                ConfigPath="{Binding Settings.Character3DConfigFile}" />
         </Border>
         <Border
             Name="SurPick3"
@@ -376,7 +383,9 @@
             Width="140"
             Height="159"
             ab:DesignBehavior.IsDesignMode="{Binding IsDesignMode}">
-            <Image d:Source="/Assets/医生.png" Source="{Binding CurrentGame.SurPlayerList[3].PictureShown}" />
+            <controls:CharacterVisual
+                Player="{Binding CurrentGame.SurPlayerList[3]}"
+                ConfigPath="{Binding Settings.Character3DConfigFile}" />
         </Border>
         <!--  Sur Picking Border  -->
         <Rectangle

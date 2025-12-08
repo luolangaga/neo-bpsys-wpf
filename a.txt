@@ -1,0 +1,423 @@
+获取当前用户的玩家赛事记录
+- URL: /api/PlayerMatches/me/stats
+- 方法: GET
+- 描述: 获取当前登录用户的赛事统计数据和近期赛事记录。
+- 认证: 需要用户认证 (JWT Token)。
+- 请求参数: 无
+- 响应示例:
+  
+  ```
+  {
+      "totalMatches": 100,
+      "winRate": 0.65,
+      "lossRate": 0.3,
+      "drawRate": 0.05,
+      "recentMatches": [
+          {
+              "id": 
+              "guid-of-match-1",
+              "playerId": 
+              "guid-of-player",
+              "eventId": 
+              "guid-of-event",
+              "gameRoleId": 
+              "guid-of-game-role",
+              "result": "Win", // 
+              Win, Loss, Draw
+              "score": 100,
+              "playedAt": 
+              "2023-11-25T10:00:00Z
+              ",
+              "eventName": "某某杯赛
+              事",
+              "gameRoleName": "上单
+              "
+          },
+          {
+              "id": 
+              "guid-of-match-2",
+              "playerId": 
+              "guid-of-player",
+              "eventId": 
+              "guid-of-event",
+              "gameRoleId": 
+              "guid-of-game-role",
+              "result": "Loss",
+              "score": 50,
+              "playedAt": 
+              "2023-11-24T15:30:00Z
+              ",
+              "eventName": "某某杯赛
+              事",
+              "gameRoleName": "打野
+              "
+          }
+      ]
+  }
+  ```
+- 可能的状态码:
+  
+  - 200 OK : 成功获取赛事记录。
+  - 401 Unauthorized : 用户未认证。
+我已经完成了第一个API文档的总结。现在我将更新任务列表。
+
+1/3 已完成
+
+总结“获取当前用户的玩家赛事记录”API文档
+
+总结“获取指定玩家的赛事记录”API文档
+
+总结“创建玩家赛事记录”API文档
+
+好的，第一个任务已完成。现在我将开始总结第二个API文档。
+
+### 2. 获取指定玩家的赛事记录
+根据搜索结果， ASG.Web\\src\\views\\PlayerStatsView.vue:177 中有一个 getPlayerStats(searchId) 函数，这表明前端可以根据 searchId 获取玩家统计信息。
+
+同时，在 ASG.Api\\Repositories\\PlayerMatchRepository.cs:61 中，我看到了 GetCountByPlayerAsync(Guid playerId) 方法，这表明后端支持根据 playerId 获取玩家赛事记录。
+
+我将根据这些信息来总结API文档。
+
+1/3 已完成
+
+总结“获取当前用户的玩家赛事记录”API文档
+
+总结“获取指定玩家的赛事记录”API文档
+
+总结“创建玩家赛事记录”API文档
+
+### API 文档：玩家赛事记录 2. 获取指定玩家的赛事记录
+- URL: /api/PlayerMatches/{playerId}/stats
+- 方法: GET
+- 描述: 获取指定玩家的赛事统计数据和近期赛事记录。
+- 认证: 无需认证 (公开接口)。
+- 请求参数:
+  
+  - playerId : (路径参数) 玩家的唯一标识符 (GUID)。
+- 响应示例:
+  
+  ```
+  {
+      "totalMatches": 80,
+      "winRate": 0.5,
+      "lossRate": 0.4,
+      "drawRate": 0.1,
+      "recentMatches": [
+          {
+              "id": 
+              "guid-of-match-3",
+              "playerId": 
+              "guid-of-player-2",
+              "eventId": 
+              "guid-of-event-2",
+              "gameRoleId": 
+              "guid-of-game-role-2"
+              ,
+              "result": "Draw",
+              "score": 70,
+              "playedAt": 
+              "2023-11-23T11:00:00Z
+              ",
+              "eventName": "城市争霸
+              赛",
+              "gameRoleName": "中单
+              "
+          },
+          {
+              "id": 
+              "guid-of-match-4",
+              "playerId": 
+              "guid-of-player-2",
+              "eventId": 
+              "guid-of-event-2",
+              "gameRoleId": 
+              "guid-of-game-role-2"
+              ,
+              "result": "Win",
+              "score": 120,
+              "playedAt": 
+              "2023-11-22T16:00:00Z
+              ",
+              "eventName": "城市争霸
+              赛",
+              "gameRoleName": "中单
+              "
+          }
+      ]
+  }
+  ```
+- 可能的状态码:
+  
+  - 200 OK : 成功获取赛事记录。
+  - 404 Not Found : 指定玩家不存在。
+我已经完成了第二个API文档的总结。现在我将更新任务列表。
+
+2/3 已完成
+
+总结“获取当前用户的玩家赛事记录”API文档
+
+总结“获取指定玩家的赛事记录”API文档
+
+总结“创建玩家赛事记录”API文档
+
+好的，第二个任务已完成。现在我将开始总结第三个API文档。
+
+### 3. 创建玩家赛事记录
+根据搜索结果， ASG.Web\\src\\services\\matches.js:130 中有一个 createPlayerMatch(dto) 函数，它调用了 /PlayerMatches 接口，并使用 POST 方法。
+
+在 ASG.Api\\Services\\PlayerMatchService.cs:49 附近，我看到了 CreateAsync 方法，它接收一个 DTO (Data Transfer Object) 来创建 PlayerMatch 实体。同时，代码中包含了一些业务逻辑验证，例如“赛事报名并审核通过的队伍不足3支，无法手动添加对局记录”、“玩家不存在”、“该玩家不属于任何战队”、“该玩家所在战队未报名此赛事”等，这表明创建赛事记录可能需要特定的权限和满足一些前置条件。
+
+我将根据这些信息来总结API文档。
+
+2/3 已完成
+
+总结“获取当前用户的玩家赛事记录”API文档
+
+总结“获取指定玩家的赛事记录”API文档
+
+总结“创建玩家赛事记录”API文档
+
+### API 文档：玩家赛事记录 3. 创建玩家赛事记录
+- URL: /api/PlayerMatches
+- 方法: POST
+- 描述: 创建一条新的玩家赛事记录。此操作通常需要管理员或赛事组织者权限，并且会进行多项业务逻辑验证，例如玩家和战队是否已报名赛事等。
+- 认证: 需要用户认证 (JWT Token)，且用户需具备相应权限。
+- 请求体 (Request Body): application/json
+  
+  ```
+  {
+      "playerId": 
+      "guid-of-player", // 玩家ID
+      "eventId": 
+      "guid-of-event",   // 赛事ID
+      "gameRoleId": 
+      "guid-of-game-role", // 游戏
+      角色ID
+      "result": 
+      "Win",              // 比赛结
+      果，可选值: "Win", "Loss", 
+      "Draw" (或中文 "胜利", "失败", 
+      "平局")
+      "score": 
+      100,                 // 玩家
+      得分
+      "playedAt": 
+      "2023-11-25T10:00:00Z" // 比
+      赛时间 (可选，默认为当前时间)
+  }
+  ```
+- 响应示例:
+  
+  ```
+  {
+      "id": 
+      "guid-of-new-player-match",
+      "playerId": "guid-of-player",
+      "eventId": "guid-of-event",
+      "gameRoleId": 
+      "guid-of-game-role",
+      "result": "Win",
+      "score": 100,
+      "playedAt": 
+      "2023-11-25T10:00:00Z",
+      "createdAt": 
+      "2023-11-25T10:00:00Z",
+      "updatedAt": 
+      "2023-11-25T10:00:00Z",
+      "eventName": "某某杯赛事",
+      "gameRoleName": "上单"
+  }
+  ```
+- 可能的状态码:
+  
+  - 201 Created : 赛事记录创建成功。
+  - 400 Bad Request : 请求参数无效或不符合业务逻辑 (例如：玩家不存在、战队未报名赛事、赛事队伍不足等)。
+  - 401 Unauthorized : 用户未认证。
+  - 403 Forbidden : 用户无权限执行此操作。
+我已经完成了第三个API文档的总结。现在我将更新任务列表。
+
+3/3 已完成
+
+总结“获取当前用户的玩家赛事记录”API文档
+
+总结“获取指定玩家的赛事记录”API文档
+
+总结“创建玩家赛事记录”API文档
+
+我已经为你总结了player赛事纪录的API文档，包括以下三个主要接口：
+
+### API 文档：玩家赛事记录 1. 获取当前用户的玩家赛事记录
+- URL: /api/PlayerMatches/me/stats
+- 方法: GET
+- 描述: 获取当前登录用户的赛事统计数据和近期赛事记录。
+- 认证: 需要用户认证 (JWT Token)。
+- 请求参数: 无
+- 响应示例:
+  
+  ```
+  {
+      "totalMatches": 100,
+      "winRate": 0.65,
+      "lossRate": 0.3,
+      "drawRate": 0.05,
+      "recentMatches": [
+          {
+              "id": 
+              "guid-of-match-1",
+              "playerId": 
+              "guid-of-player",
+              "eventId": 
+              "guid-of-event",
+              "gameRoleId": 
+              "guid-of-game-role",
+              "result": "Win", // 
+              Win, Loss, Draw
+              "score": 100,
+              "playedAt": 
+              "2023-11-25T10:00:00Z
+              ",
+              "eventName": "某某杯赛
+              事",
+              "gameRoleName": "上单
+              "
+          },
+          {
+              "id": 
+              "guid-of-match-2",
+              "playerId": 
+              "guid-of-player",
+              "eventId": 
+              "guid-of-event",
+              "gameRoleId": 
+              "guid-of-game-role",
+              "result": "Loss",
+              "score": 50,
+              "playedAt": 
+              "2023-11-24T15:30:00Z
+              ",
+              "eventName": "某某杯赛
+              事",
+              "gameRoleName": "打野
+              "
+          }
+      ]
+  }
+  ```
+- 可能的状态码:
+  
+  - 200 OK : 成功获取赛事记录。
+  - 401 Unauthorized : 用户未认证。 2. 获取指定玩家的赛事记录
+- URL: /api/PlayerMatches/{playerId}/stats
+- 方法: GET
+- 描述: 获取指定玩家的赛事统计数据和近期赛事记录。
+- 认证: 无需认证 (公开接口)。
+- 请求参数:
+  
+  - playerId : (路径参数) 玩家的唯一标识符 (GUID)。
+- 响应示例:
+  
+  ```
+  {
+      "totalMatches": 80,
+      "winRate": 0.5,
+      "lossRate": 0.4,
+      "drawRate": 0.1,
+      "recentMatches": [
+          {
+              "id": 
+              "guid-of-match-3",
+              "playerId": 
+              "guid-of-player-2",
+              "eventId": 
+              "guid-of-event-2",
+              "gameRoleId": 
+              "guid-of-game-role-2"
+              ,
+              "result": "Draw",
+              "score": 70,
+              "playedAt": 
+              "2023-11-23T11:00:00Z
+              ",
+              "eventName": "城市争霸
+              赛",
+              "gameRoleName": "中单
+              "
+          },
+          {
+              "id": 
+              "guid-of-match-4",
+              "playerId": 
+              "guid-of-player-2",
+              "eventId": 
+              "guid-of-event-2",
+              "gameRoleId": 
+              "guid-of-game-role-2"
+              ,
+              "result": "Win",
+              "score": 120,
+              "playedAt": 
+              "2023-11-22T16:00:00Z
+              ",
+              "eventName": "城市争霸
+              赛",
+              "gameRoleName": "中单
+              "
+          }
+      ]
+  }
+  ```
+- 可能的状态码:
+  
+  - 200 OK : 成功获取赛事记录。
+  - 404 Not Found : 指定玩家不存在。 3. 创建玩家赛事记录
+- URL: /api/PlayerMatches
+- 方法: POST
+- 描述: 创建一条新的玩家赛事记录。此操作通常需要管理员或赛事组织者权限，并且会进行多项业务逻辑验证，例如玩家和战队是否已报名赛事等。
+- 认证: 需要用户认证 (JWT Token)，且用户需具备相应权限。
+- 请求体 (Request Body): application/json
+  
+  ```
+  {
+      "playerId": 
+      "guid-of-player", // 玩家ID
+      "eventId": 
+      "guid-of-event",   // 赛事ID
+      "gameRoleId": 
+      "guid-of-game-role", // 游戏
+      角色ID
+      "result": 
+      "Win",              // 比赛结
+      果，可选值: "Win", "Loss", 
+      "Draw" (或中文 "胜利", "失败", 
+      "平局")
+      "score": 
+      100,                 // 玩家
+      得分
+      "playedAt": 
+      "2023-11-25T10:00:00Z" // 比
+      赛时间 (可选，默认为当前时间)
+  }
+  ```
+- 响应示例:
+  
+  ```
+  {
+      "id": 
+      "guid-of-new-player-match",
+      "playerId": "guid-of-player",
+      "eventId": "guid-of-event",
+      "gameRoleId": 
+      "guid-of-game-role",
+      "result": "Win",
+      "score": 100,
+      "playedAt": 
+      "2023-11-25T10:00:00Z",
+      "createdAt": 
+      "2023-11-25T10:00:00Z",
+      "updatedAt": 
+      "2023-11-25T10:00:00Z",
+      "eventName": "某某杯赛事",
+      "gameRoleName": "上单"
+  }
+  ```
+- 可能的状态码:

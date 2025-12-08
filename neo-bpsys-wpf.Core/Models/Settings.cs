@@ -109,6 +109,9 @@ public partial class BpWindowSettings : ViewModelBase
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(PickingBorderBrush))]
     private string? _pickingBorderColor = Colors.White.ToString();
 
+    [ObservableProperty]
+    private string? _character3DConfigUri;
+
     /// <summary>
     /// 文本颜色Brush
     /// </summary>
@@ -129,6 +132,42 @@ public partial class BpWindowSettings : ViewModelBase
 
     [JsonIgnore]
     public ImageSource? PickingBorderImage => ImageHelper.GetUiImageFromSetting(PickingBorderImageUri, "pickingBorder");
+<<<<<<< HEAD
+=======
+
+    [JsonIgnore]
+    public string? PickingBorderLottieFile => ImageHelper.GetUiJsonPathFromSetting(PickingBorderLottieUri, "pickingBorder");
+
+    [JsonIgnore]
+    public string? Character3DConfigFile => ImageHelper.GetUiJsonPathFromSetting(Character3DConfigUri, "character3d");
+
+    [JsonIgnore]
+    public List<Int32Rect> PickOcrRegions { get; set; } =
+        [ new Int32Rect(0,0,0,0), new Int32Rect(0,0,0,0), new Int32Rect(0,0,0,0), new Int32Rect(0,0,0,0), new Int32Rect(0,0,0,0) ];
+
+    public bool PickOcrRowMode { get; set; } = false;
+
+    [JsonIgnore]
+    public List<Int32Rect> PickOcrRowRegions { get; set; } =
+        [ new Int32Rect(0,0,0,0), new Int32Rect(0,0,0,0) ];
+
+    public bool BanOcrRowMode { get; set; } = false;
+
+    [JsonIgnore]
+    public Int32Rect BanOcrRowRegion { get; set; } = new Int32Rect(0,0,0,0);
+
+    [JsonIgnore]
+    public Int32Rect BanSurOcrRowRegion { get; set; } = new Int32Rect(0,0,0,0);
+
+    [JsonIgnore]
+    public Int32Rect BanHunOcrRowRegion { get; set; } = new Int32Rect(0,0,0,0);
+}
+
+public partial class OcrSettings : ViewModelBase
+{
+    public string ModelSpec { get; set; } = "ChineseV3";
+    public string Mirror { get; set; } = "";
+>>>>>>> 731ecb2 (feat(ASG): 添加玩家赛事记录功能及3D角色展示)
 }
 
 /// <summary>

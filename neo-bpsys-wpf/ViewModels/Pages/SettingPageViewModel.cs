@@ -346,6 +346,35 @@ public partial class SettingPageViewModel : ViewModelBase
     }
 
     [RelayCommand]
+<<<<<<< HEAD
+=======
+    private void EditBpWindowLottie(string arg)
+    {
+        var settings = _settingsHostService.Settings.BpWindowSettings;
+        var propertyMap = new Dictionary<string, (Action<string?>, string?)>
+        {
+            { "PickingBorderLottieUri", (value => settings.PickingBorderLottieUri = value, settings.PickingBorderLottieUri) }
+        };
+
+        if (!propertyMap.TryGetValue(arg, out var valueTuple)) return;
+        SetUiJson(valueTuple.Item1, valueTuple.Item2);
+    }
+
+    [RelayCommand]
+    private void EditBpWindow3DConfig(string arg)
+    {
+        var settings = _settingsHostService.Settings.BpWindowSettings;
+        var propertyMap = new Dictionary<string, (Action<string?>, string?)>
+        {
+            { "Character3DConfigUri", (value => settings.Character3DConfigUri = value, settings.Character3DConfigUri) }
+        };
+
+        if (!propertyMap.TryGetValue(arg, out var valueTuple)) return;
+        SetUiJson(valueTuple.Item1, valueTuple.Item2);
+    }
+
+    [RelayCommand]
+>>>>>>> 731ecb2 (feat(ASG): 添加玩家赛事记录功能及3D角色展示)
     private void EditCutSceneWindowImages()
     {
         var settings = _settingsHostService.Settings.CutSceneWindowSettings;
