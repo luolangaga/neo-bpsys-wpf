@@ -1,0 +1,23 @@
+{
+  "name": "vue-plugin-market",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "sync-docs": "node scripts/sync-docs.js"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "github-markdown-css": "^5.8.1",
+    "markdown-it": "^14.1.0",
+    "vue": "^3.5.24"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "vite": "^6.0.0"
+  },
+  "overrides": {}
+}

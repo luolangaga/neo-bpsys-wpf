@@ -14,6 +14,7 @@ namespace neo_bpsys_wpf.Core.Models;
 public partial class Settings : ViewModelBase
 {
     public bool ShowTip { get; set; } = true;
+    public string? PluginMarketBaseUrl { get; set; } = "http://localhost:5228";
     
     public string? AsgEmail { get; set; } = string.Empty;
     public string? AsgPassword { get; set; } = string.Empty;

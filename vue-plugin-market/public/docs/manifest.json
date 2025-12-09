@@ -1,0 +1,111 @@
+[
+  {
+    "name": "plugin-dev-guide.md",
+    "type": "file",
+    "path": "plugin-dev-guide.md"
+  },
+  {
+    "name": "plugin-system",
+    "type": "directory",
+    "path": "plugin-system",
+    "children": [
+      {
+        "name": "architecture.md",
+        "type": "file",
+        "path": "plugin-system/architecture.md"
+      },
+      {
+        "name": "index.md",
+        "type": "file",
+        "path": "plugin-system/index.md"
+      },
+      {
+        "name": "plugin-manager.md",
+        "type": "file",
+        "path": "plugin-system/plugin-manager.md"
+      },
+      {
+        "name": "settings-config.md",
+        "type": "file",
+        "path": "plugin-system/settings-config.md"
+      },
+      {
+        "name": "startup-flow.md",
+        "type": "file",
+        "path": "plugin-system/startup-flow.md"
+      },
+      {
+        "name": "troubleshooting.md",
+        "type": "file",
+        "path": "plugin-system/troubleshooting.md"
+      },
+      {
+        "name": "ui-integration.md",
+        "type": "file",
+        "path": "plugin-system/ui-integration.md"
+      }
+    ]
+  },
+  {
+    "name": "plugin-system-maintenance.md",
+    "type": "file",
+    "path": "plugin-system-maintenance.md"
+  },
+  {
+    "name": "plugins",
+    "type": "directory",
+    "path": "plugins",
+    "children": [
+      {
+        "name": "best-practices.md",
+        "type": "file",
+        "path": "plugins/best-practices.md"
+      },
+      {
+        "name": "faq.md",
+        "type": "file",
+        "path": "plugins/faq.md"
+      },
+      {
+        "name": "getting-started.md",
+        "type": "file",
+        "path": "plugins/getting-started.md"
+      },
+      {
+        "name": "hot-reload-disable.md",
+        "type": "file",
+        "path": "plugins/hot-reload-disable.md"
+      },
+      {
+        "name": "index.md",
+        "type": "file",
+        "path": "plugins/index.md"
+      },
+      {
+        "name": "init-examples.md",
+        "type": "file",
+        "path": "plugins/init-examples.md"
+      },
+      {
+        "name": "interfaces.md",
+        "type": "file",
+        "path": "plugins/interfaces.md"
+      },
+      {
+        "name": "project-setup.md",
+        "type": "file",
+        "path": "plugins/project-setup.md"
+      },
+      {
+        "name": "testing-debugging.md",
+        "type": "file",
+        "path": "plugins/testing-debugging.md"
+      },
+      {
+        "name": "ui-navigation.md",
+        "type": "file",
+        "path": "plugins/ui-navigation.md"
+      }
+    ]
+  }
+]

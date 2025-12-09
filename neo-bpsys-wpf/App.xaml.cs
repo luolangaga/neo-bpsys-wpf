@@ -66,6 +66,7 @@ public partial class App : Application
             .ConfigureServices((context, services) =>
             {
                 services.AddNavigationViewPageProvider();
+                services.AddHttpClient();
 
                 services.AddHostedService<ApplicationHostService>();
 
@@ -93,6 +94,8 @@ public partial class App : Application
                 services.AddSingleton<IMessageBoxService, MessageBoxService>();
                 services.AddSingleton<IInfoBarService, InfoBarService>();
                 services.AddSingleton<ISnackbarService, SnackbarService>();
+                services.AddSingleton<IAppRestartService, AppRestartService>();
+                services.AddHttpClient<IPluginMarketplaceService, PluginMarketplaceService>();
 
                 // Register plugin manager instance for UI access
                 services.AddSingleton(_pluginManager);

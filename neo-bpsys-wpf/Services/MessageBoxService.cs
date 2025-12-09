@@ -1,4 +1,4 @@
-﻿using neo_bpsys_wpf.Core.Abstractions.Services;
+using neo_bpsys_wpf.Core.Abstractions.Services;
 using Wpf.Ui.Controls;
 
 namespace neo_bpsys_wpf.Services;
@@ -27,6 +27,31 @@ public class MessageBoxService : IMessageBoxService
             CloseButtonIcon = new SymbolIcon() { Symbol = SymbolRegular.Prohibited20 },
             CloseButtonText = secondaryButtonText,
             Owner = App.Current.MainWindow,
+        };
+        var result = await messageBox.ShowDialogAsync();
+
+        return result == MessageBoxResult.Primary;
+    }
+
+    /// <summary>
+    /// 显示重启确认对话框
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="message"></param>
+    /// <param name="primaryButtonText"></param>
+    /// <param name="secondaryButtonText"></param>
+    /// <returns></returns>
+    public async Task<bool> ShowRestartConfirmAsync(string title, string message, string primaryButtonText = "重启", string secondaryButtonText = "取消")
+    {
+        var messageBox = new MessageBox()
+        {
+            Title = title,
+            Content = message,
+            PrimaryButtonText = primaryButtonText,
+            CloseButtonText = secondaryButtonText,
+            CloseButtonIcon = new SymbolIcon() { Symbol = SymbolRegular.Dismiss24 },
+            PrimaryButtonIcon = new SymbolIcon() { Symbol = SymbolRegular.ArrowSyncCircle24 },
+            Owner = App.Current.MainWindow
         };
         var result = await messageBox.ShowDialogAsync();
 

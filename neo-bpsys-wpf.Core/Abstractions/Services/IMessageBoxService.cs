@@ -1,4 +1,4 @@
-﻿namespace neo_bpsys_wpf.Core.Abstractions.Services;
+namespace neo_bpsys_wpf.Core.Abstractions.Services;
 
 /// <summary>
 /// 提示框服务接口
@@ -39,4 +39,13 @@ public interface IMessageBoxService
     /// <param name="secondaryButtonText"></param>
     /// <returns></returns>
     Task<bool> ShowConfirmAsync(string title, string message, string primaryButtonText = "确认", string secondaryButtonText = "取消");
+    /// <summary>
+    /// 显示重启确认对话框
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="message"></param>
+    /// <param name="primaryButtonText"></param>
+    /// <param name="secondaryButtonText"></param>
+    /// <returns></returns>
+    Task<bool> ShowRestartConfirmAsync(string title, string message, string primaryButtonText = "重启", string secondaryButtonText = "取消");
 }

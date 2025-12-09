@@ -14,12 +14,18 @@
     d:DesignWidth="685"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Loaded="OnLoaded"
     mc:Ignorable="d">
-
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Grid.Row="0">
             <TextBlock FontSize="16" FontWeight="Bold" Text="已加载插件"/>
@@ -46,5 +52,31 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,12,0,0">
+            <TextBlock FontSize="16" FontWeight="Bold" Text="插件市场"/>
+            <ui:Button Margin="12,0,0,0" Content="刷新列表" Command="{Binding RefreshMarketplaceCommand}" Icon="{ui:SymbolIcon Symbol=ArrowClockwise24}"/>
+        </StackPanel>
+        <ItemsControl Grid.Row="3" ItemsSource="{Binding RemotePlugins}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Style="{StaticResource Card}" Margin="0,6,0,0">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding Description}"/>
+                            <TextBlock Text="{Binding Version}"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <ui:Button Content="安装" Command="{Binding DataContext.InstallPluginCommand, RelativeSource={RelativeSource AncestorType=Page}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon Symbol=Add24}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,8,0,0">
+            <TextBlock Text="下载进度" Visibility="{Binding IsDownloading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            <ProgressBar Margin="8,0,0,0" Width="200" Height="16" Minimum="0" Maximum="100" Value="{Binding DownloadPercent}" IsIndeterminate="{Binding IsIndeterminateProgress}" Visibility="{Binding IsDownloading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            <TextBlock Margin="8,0,0,0" Text="%" Visibility="{Binding IsDownloading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        </StackPanel>
     </Grid>
 </Page>

@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace neo_bpsys_wpf.Views.Pages;
 
@@ -15,5 +16,13 @@ public partial class ExtensionPage : Page
     private void Border_ManipulationInertiaStarting(object sender, System.Windows.Input.ManipulationInertiaStartingEventArgs e)
     {
 
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is neo_bpsys_wpf.ViewModels.Pages.ExtensionPageViewModel vm)
+        {
+            vm.RefreshMarketplaceCommand.Execute(null);
+        }
     }
 }
