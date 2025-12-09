@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Deterministic>false</Deterministic>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AssemblyName>Bpsys.Plugin.OCR</AssemblyName>
+    <RootNamespace>Bpsys.Plugin.OCR</RootNamespace>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)..\..\neo-bpsys-wpf\bin\$(Configuration)\net9.0-windows7.0\Plugins\</OutputPath>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\neo-bpsys-wpf.Core\neo-bpsys-wpf.Core.csproj" />
+    <ProjectReference Include="..\..\neo-bpsys-wpf\neo-bpsys-wpf.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Sdcb.PaddleOCR" Version="3.0.1" />
+    <PackageReference Include="Sdcb.PaddleOCR.Models.Online" Version="3.0.1" />
+    <PackageReference Include="WPF-UI.DependencyInjection" Version="4.0.3" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="OpenCvSharp4" Version="4.11.0.20250507" />
+    <PackageReference Include="OpenCvSharp4.Extensions" Version="4.11.0.20250507" />
+  </ItemGroup>
+</Project>

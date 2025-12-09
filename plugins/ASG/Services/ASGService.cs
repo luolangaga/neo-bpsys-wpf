@@ -7,10 +7,9 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using neo_bpsys_wpf.Core.Abstractions.Services;
 using System.Threading.Tasks;
 
-namespace neo_bpsys_wpf.Services;
+namespace Bpsys.Plugin.ASG.Services;
 
 public class ASGService : IASGService
 {

@@ -17,6 +17,7 @@ public partial class Settings : ViewModelBase
     
     public string? AsgEmail { get; set; } = string.Empty;
     public string? AsgPassword { get; set; } = string.Empty;
+    public List<string> DisabledPlugins { get; set; } = new();
     [ObservableProperty] private BpWindowSettings _bpWindowSettings = new();
     [ObservableProperty] private CutSceneWindowSettings _cutSceneWindowSettings = new();
     [ObservableProperty] private ScoreWindowSettings _scoreWindowSettings = new();

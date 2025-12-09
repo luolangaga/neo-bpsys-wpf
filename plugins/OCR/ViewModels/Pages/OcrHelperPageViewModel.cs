@@ -12,11 +12,12 @@ using Sdcb.PaddleOCR.Models;
 using System.Windows;
 using System.Windows.Threading;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace neo_bpsys_wpf.ViewModels.Pages;
+namespace Bpsys.Plugin.OCR.ViewModels.Pages;
 
-public partial class OcrHelperPageViewModel : ViewModelBase
-    , IDisposable
+public partial class OcrHelperPageViewModel : ViewModelBase, IDisposable
 {
     public OcrHelperPageViewModel() { }
 
@@ -46,6 +47,11 @@ public partial class OcrHelperPageViewModel : ViewModelBase
         _isBanRowModeEnabled = _settingsHostService.Settings.BpWindowSettings.BanOcrRowMode;
     }
 
+    partial void OnIsOcrRecognizingChanged(bool value)
+    {
+        if (value) StartOcrTimer(); else StopOcrTimer();
+    }
+
     [RelayCommand]
     private void SelectPickOcrRowRegions()
     {
@@ -57,20 +63,20 @@ public partial class OcrHelperPageViewModel : ViewModelBase
         };
         win.ShowDialog();
         var regions = win.Regions;
-        if (regions.Count >= 2)
+        if (regions.Count == 2)
         {
             var bp = _settingsHostService.Settings.BpWindowSettings;
-            bp.PickOcrRowRegions = [ regions[0], regions[1] ];
+            bp.PickOcrRowRegions = [.. regions];
             bp.PickOcrRowMode = true;
             IsPickRowModeEnabled = true;
-            if (IsOcrRecognizing) StartOcrTimer();
+            _settingsHostService.SaveConfig();
         }
     }
 
     [RelayCommand]
     private void SelectBanSurOcrRowRegion()
     {
-        var labels = new[] { "框选当局Ban（求生者）一排" };
+        var labels = new[] { "框选禁用求生一排" };
         var win = new neo_bpsys_wpf.Views.Windows.RegionSelectorWindow(labels)
         {
             Owner = Application.Current.MainWindow,
@@ -84,14 +90,14 @@ public partial class OcrHelperPageViewModel : ViewModelBase
             bp.BanSurOcrRowRegion = regions[0];
             bp.BanOcrRowMode = true;
             IsBanRowModeEnabled = true;
-            if (IsOcrRecognizing) StartOcrTimer();
+            _settingsHostService.SaveConfig();
         }
     }
 
     [RelayCommand]
     private void SelectBanHunOcrRowRegion()
     {
-        var labels = new[] { "框选当局Ban（监管者）一排" };
+        var labels = new[] { "框选禁用监管一排" };
         var win = new neo_bpsys_wpf.Views.Windows.RegionSelectorWindow(labels)
         {
             Owner = Application.Current.MainWindow,
@@ -105,84 +111,20 @@ public partial class OcrHelperPageViewModel : ViewModelBase
             bp.BanHunOcrRowRegion = regions[0];
             bp.BanOcrRowMode = true;
             IsBanRowModeEnabled = true;
-            if (IsOcrRecognizing) StartOcrTimer();
+            _settingsHostService.SaveConfig();
         }
     }
 
     partial void OnIsPickRowModeEnabledChanged(bool value)
     {
         _settingsHostService.Settings.BpWindowSettings.PickOcrRowMode = value;
-        if (!IsOcrRecognizing) return;
-        var bp = _settingsHostService.Settings.BpWindowSettings;
-        if (value)
-        {
-            if (bp.PickOcrRowRegions == null || bp.PickOcrRowRegions.Count != 2)
-            {
-                SelectPickOcrRowRegions();
-                return;
-            }
-        }
-        StopOcrTimer();
-        StartOcrTimer();
+        _settingsHostService.SaveConfig();
     }
 
     partial void OnIsBanRowModeEnabledChanged(bool value)
     {
         _settingsHostService.Settings.BpWindowSettings.BanOcrRowMode = value;
-        if (!IsOcrRecognizing) return;
-        var bp = _settingsHostService.Settings.BpWindowSettings;
-        if (value)
-        {
-            if (bp.BanSurOcrRowRegion.Width <= 0 || bp.BanSurOcrRowRegion.Height <= 0)
-            {
-                SelectBanSurOcrRowRegion();
-                return;
-            }
-            if (bp.BanHunOcrRowRegion.Width <= 0 || bp.BanHunOcrRowRegion.Height <= 0)
-            {
-                SelectBanHunOcrRowRegion();
-                return;
-            }
-        }
-        StopOcrTimer();
-        StartOcrTimer();
-    }
-
-    partial void OnIsOcrRecognizingChanged(bool value)
-    {
-        if (value)
-        {
-            var bp = _settingsHostService.Settings.BpWindowSettings;
-            if (IsPickRowModeEnabled)
-            {
-                var rects = bp.PickOcrRowRegions;
-                if (rects == null || rects.Count != 2)
-                {
-                    SelectPickOcrRowRegions();
-                    return;
-                }
-            }
-            if (IsBanRowModeEnabled)
-            {
-                var surOk = bp.BanSurOcrRowRegion.Width > 0 && bp.BanSurOcrRowRegion.Height > 0;
-                var hunOk = bp.BanHunOcrRowRegion.Width > 0 && bp.BanHunOcrRowRegion.Height > 0;
-                if (!surOk)
-                {
-                    SelectBanSurOcrRowRegion();
-                    return;
-                }
-                if (!hunOk)
-                {
-                    SelectBanHunOcrRowRegion();
-                    return;
-                }
-            }
-            StartOcrTimer();
-        }
-        else
-        {
-            StopOcrTimer();
-        }
+        _settingsHostService.SaveConfig();
     }
 
     private void StartOcrTimer()
@@ -226,7 +168,7 @@ public partial class OcrHelperPageViewModel : ViewModelBase
                     var tokensSur = ExtractRowTokens(resSur, 4);
                     for (var i = 0; i < tokensSur.Count; i++)
                     {
-                        var ch = FindBestCharacterFuzzy(tokensSur[i], _sharedDataService.SurCharaList);
+                        var ch = FindBestCharacterFuzzy(tokensSur[i], _sharedDataService.SurCharaList.Values);
                         if (ch != null && i < _sharedDataService.CurrentGame.SurPlayerList.Count)
                             _sharedDataService.CurrentGame.SurPlayerList[i].Character = ch;
                     }
@@ -235,7 +177,7 @@ public partial class OcrHelperPageViewModel : ViewModelBase
                     var tokensHun = ExtractRowTokens(resHun, 4);
                     if (tokensHun.Count > 0)
                     {
-                        var chHun = FindBestCharacterFuzzy(tokensHun[0], _sharedDataService.HunCharaList);
+                        var chHun = FindBestCharacterFuzzy(tokensHun[0], _sharedDataService.HunCharaList.Values);
                         if (chHun != null)
                             _sharedDataService.CurrentGame.HunPlayer.Character = chHun;
                     }
@@ -246,12 +188,12 @@ public partial class OcrHelperPageViewModel : ViewModelBase
                     if (bp.BanSurOcrRowRegion.Width > 0 && bp.BanSurOcrRowRegion.Height > 0)
                     {
                         var resBanSur = await Task.Run(() => RecognizeResult(bp.BanSurOcrRowRegion));
-                        var tokensBanSur = ExtractRowTokens(resBanSur, AppConstants.CurrentBanSurCount);
+                        var tokensBanSur = ExtractRowTokens(resBanSur, 12);
                         var idx = 0;
                         foreach (var tk in tokensBanSur)
                         {
-                            if (idx >= AppConstants.CurrentBanSurCount) break;
-                            var ch = FindBestCharacterFuzzy(tk, _sharedDataService.SurCharaList);
+                            if (idx >= neo_bpsys_wpf.Core.AppConstants.CurrentBanSurCount) break;
+                            var ch = FindBestCharacterFuzzy(tk, _sharedDataService.SurCharaList.Values);
                             if (ch != null)
                             {
                                 _sharedDataService.CurrentGame.CurrentSurBannedList[idx] = ch;
@@ -259,16 +201,15 @@ public partial class OcrHelperPageViewModel : ViewModelBase
                             }
                         }
                     }
-
                     if (bp.BanHunOcrRowRegion.Width > 0 && bp.BanHunOcrRowRegion.Height > 0)
                     {
                         var resBanHun = await Task.Run(() => RecognizeResult(bp.BanHunOcrRowRegion));
-                        var tokensBanHun = ExtractRowTokens(resBanHun, AppConstants.CurrentBanHunCount);
+                        var tokensBanHun = ExtractRowTokens(resBanHun, 12);
                         var idx = 0;
                         foreach (var tk in tokensBanHun)
                         {
-                            if (idx >= AppConstants.CurrentBanHunCount) break;
-                            var ch = FindBestCharacterFuzzy(tk, _sharedDataService.HunCharaList);
+                            if (idx >= neo_bpsys_wpf.Core.AppConstants.CurrentBanHunCount) break;
+                            var ch = FindBestCharacterFuzzy(tk, _sharedDataService.HunCharaList.Values);
                             if (ch != null)
                             {
                                 _sharedDataService.CurrentGame.CurrentHunBannedList[idx] = ch;
@@ -344,35 +285,31 @@ public partial class OcrHelperPageViewModel : ViewModelBase
         return (System.Drawing.Bitmap)bmp.Clone();
     }
 
-    private static List<string> ExtractRowTokens(PaddleOcrResult? result, int maxCount)
+    private static Mat EnsureMatSize(Mat mat)
     {
-        var list = new List<string>();
-        var regions = result?.Regions;
-        if (regions != null && regions.Any())
-        {
-            foreach (var r in regions.OrderBy(r => r.Rect.Center.X))
-            {
-                if (!string.IsNullOrWhiteSpace(r.Text)) list.Add(r.Text.Trim());
-            }
-        }
-        if (list.Count == 0 && result != null && !string.IsNullOrWhiteSpace(result.Text))
-        {
-            var t = result.Text.Replace("\r", " ").Replace("\n", " ");
-            list = t.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
-        }
-        if (list.Count > maxCount) list = list.Take(maxCount).ToList();
-        return list;
+        const int minSize = 128;
+        var w = mat.Width;
+        var h = mat.Height;
+        if (w >= minSize && h >= minSize) return mat;
+        var scale = Math.Max(1.0, Math.Max((double)minSize / Math.Max(1, w), (double)minSize / Math.Max(1, h)));
+        var newW = (int)Math.Round(w * scale);
+        var newH = (int)Math.Round(h * scale);
+        var dst = new Mat();
+        Cv2.Resize(mat, dst, new OpenCvSharp.Size(newW, newH), 0, 0, InterpolationFlags.Linear);
+        return dst;
     }
 
-    private static Mat EnsureMatSize(Mat src)
+    private static List<string> ExtractRowTokens(PaddleOcrResult? result, int maxCount)
     {
-        var maxPixels = 2000000;
-        var pixels = src.Rows * src.Cols;
-        if (pixels <= maxPixels) return src;
-        var scale = Math.Sqrt((double)maxPixels / pixels);
-        var dst = new Mat();
-        Cv2.Resize(src, dst, new OpenCvSharp.Size((int)(src.Cols * scale), (int)(src.Rows * scale)), 0, 0, InterpolationFlags.Area);
-        return dst;
+        var tokens = new List<string>();
+        if (result == null) return tokens;
+        foreach (var item in result.Regions)
+        {
+            var norm = Normalize(item.Text);
+            if (!string.IsNullOrEmpty(norm)) tokens.Add(norm);
+            if (tokens.Count >= maxCount) break;
+        }
+        return tokens;
     }
 
     private static string Normalize(string s)
@@ -383,71 +320,31 @@ public partial class OcrHelperPageViewModel : ViewModelBase
         return t.ToLowerInvariant();
     }
 
-    private static bool ContainsLoose(string a, string b)
+    private static Character? FindBestCharacterFuzzy(string token, IEnumerable<Character> candidates)
     {
-        if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b)) return false;
-        return a.Contains(b, StringComparison.OrdinalIgnoreCase) || b.Contains(a, StringComparison.OrdinalIgnoreCase);
+        if (string.IsNullOrEmpty(token)) return null;
+        var best = candidates.Select(ch => (Ch: ch, Score: ScoreSimilarity(token, Normalize(ch.Name))))
+            .OrderByDescending(x => x.Score).FirstOrDefault();
+        return best.Score < 0.45 ? null : best.Ch;
     }
 
-    private static double Similarity(string a, string b)
+    private static double ScoreSimilarity(string a, string b)
     {
-        if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b)) return 0.0;
-        if (a == b) return 1.0;
-        var dist = LevenshteinDistance(a, b);
-        var maxLen = Math.Max(a.Length, b.Length);
-        return maxLen == 0 ? 0.0 : 1.0 - (double)dist / maxLen;
-    }
-
-    private static int LevenshteinDistance(string s, string t)
-    {
-        var n = s.Length;
-        var m = t.Length;
-        var d = new int[n + 1, m + 1];
-        for (var i = 0; i <= n; i++) d[i, 0] = i;
-        for (var j = 0; j <= m; j++) d[0, j] = j;
-        for (var i = 1; i <= n; i++)
-        {
-            for (var j = 1; j <= m; j++)
-            {
-                var cost = s[i - 1] == t[j - 1] ? 0 : 1;
-                d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + cost);
-            }
-        }
-        return d[n, m];
-    }
-
-    private Character? FindBestCharacterFuzzy(string text, Dictionary<string, Character> dict)
-    {
-        var t = Normalize(text);
-        Character? best = null;
-        double bestScore = 0.0;
-        foreach (var kv in dict)
-        {
-            var key = Normalize(kv.Key);
-            var name = Normalize(kv.Value.Name ?? string.Empty);
-            var s1 = Similarity(t, key);
-            var s2 = string.IsNullOrEmpty(name) ? 0.0 : Similarity(t, name);
-            var s = Math.Max(s1, s2);
-            if (ContainsLoose(t, key) || (!string.IsNullOrEmpty(name) && ContainsLoose(t, name)))
-                s = Math.Max(s, 0.95);
-            if (s > bestScore)
-            {
-                bestScore = s;
-                best = kv.Value;
-            }
-        }
-        return bestScore >= 0.5 ? best : null;
+        if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b)) return 0;
+        var min = Math.Min(a.Length, b.Length);
+        var common = 0;
+        for (var i = 0; i < min; i++) if (a[i] == b[i]) common++;
+        return (double)common / Math.Max(1, Math.Max(a.Length, b.Length));
     }
 
     public void Dispose()
     {
-        StopOcrTimer();
-        _ocrAll?.Dispose();
+        try { _ocrAll?.Dispose(); } catch { }
         _ocrAll = null;
-    }
-
-    ~OcrHelperPageViewModel()
-    {
-        Dispose();
+        _ocrTimer?.Stop();
+        _ocrTimer = null;
+        _ocrDownloadCts?.Cancel();
+        _ocrDownloadCts?.Dispose();
+        _ocrDownloadCts = null;
     }
 }

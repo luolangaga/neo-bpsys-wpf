@@ -5,7 +5,7 @@ using Sdcb.PaddleOCR.Models;
 using Sdcb.PaddleOCR.Models.Online;
 using neo_bpsys_wpf.Core.Abstractions.Services;
 
-namespace neo_bpsys_wpf.Services;
+namespace Bpsys.Plugin.OCR.Services;
 
 public class OcrModelService : IOcrModelService
 {
@@ -37,7 +37,7 @@ public class OcrModelService : IOcrModelService
             while (await timer.WaitForNextTickAsync(internalCts.Token))
             {
                 var elapsed = sw.Elapsed.TotalSeconds;
-                var speed = Math.Max(4.0, Math.Min(20.0, elapsed < 2 ? 6.0 : 12.0)); // MB/s 估算
+                var speed = Math.Max(4.0, Math.Min(20.0, elapsed < 2 ? 6.0 : 12.0));
                 var downloaded = Math.Min(size, (long)(speed * 1024 * 1024 * elapsed));
                 var pct = Math.Max(lastReported, Math.Min(99.0, downloaded * 100.0 / size));
                 lastReported = pct;

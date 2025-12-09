@@ -16,9 +16,35 @@
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
 
-    <WrapPanel Orientation="Horizontal">
-        <Border Style="{StaticResource Card}">
-            <TextBlock Text="前面的区域以后再来探索吧" />
-        </Border>
-    </WrapPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <TextBlock FontSize="16" FontWeight="Bold" Text="已加载插件"/>
+            <TextBlock Margin="8,0,0,0" Text="("/>
+            <TextBlock Text="{Binding Plugins.Count}"/>
+            <TextBlock Text=")"/>
+            <ui:Button Margin="12,0,0,0" Content="重新加载插件" Command="{Binding ReloadPluginsCommand}" Icon="{ui:SymbolIcon Symbol=ArrowClockwise24}"/>
+        </StackPanel>
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding Plugins}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Style="{StaticResource Card}" Margin="0,6,0,0">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding Description}"/>
+                            <TextBlock Text="{Binding Version}"/>
+                            <TextBlock Text="{Binding Author}"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <ui:Button Content="禁用" Command="{Binding DataContext.DisablePluginCommand, RelativeSource={RelativeSource AncestorType=Page}}" CommandParameter="{Binding Id}" Icon="{ui:SymbolIcon Symbol=Prohibited24}"/>
+                                <ui:Button Margin="8,0,0,0" Content="启用" Command="{Binding DataContext.EnablePluginCommand, RelativeSource={RelativeSource AncestorType=Page}}" CommandParameter="{Binding Id}" Icon="{ui:SymbolIcon Symbol=Checkmark24}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
 </Page>

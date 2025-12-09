@@ -11,6 +11,8 @@ using neo_bpsys_wpf.Converters;
 using neo_bpsys_wpf.Core.Abstractions.Services;
 using neo_bpsys_wpf.Core.Abstractions.ViewModels;
 using neo_bpsys_wpf.Core.Enums;
+using neo_bpsys_wpf.Extensions;
+using neo_bpsys_wpf.Core.Abstractions.Extensions;
 using neo_bpsys_wpf.Core.Messages;
 using neo_bpsys_wpf.Core.Models;
 using Wpf.Ui.Appearance;
@@ -33,6 +35,7 @@ public partial class MainWindowViewModel :
     }
 
     private readonly ISharedDataService _sharedDataService;
+    private readonly PluginManager _pluginManager;
 
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
@@ -86,13 +89,15 @@ public partial class MainWindowViewModel :
         IMessageBoxService messageBoxService,
         IGameGuidanceService gameGuidanceService,
         IInfoBarService infoBarService,
-        ILogger<MainWindowViewModel> logger)
+        ILogger<MainWindowViewModel> logger,
+        PluginManager pluginManager)
     {
         _sharedDataService = sharedDataService;
         _messageBoxService = messageBoxService;
         _gameGuidanceService = gameGuidanceService;
         _infoBarService = infoBarService;
         _logger = logger;
+        _pluginManager = pluginManager;
         _isGuidanceStarted = false;
         _jsonSerializerOptions = new JsonSerializerOptions()
         {
@@ -101,6 +106,11 @@ public partial class MainWindowViewModel :
         };
         GameList = GameListBo5;
         IsBo3Mode = _sharedDataService.IsBo3Mode;
+
+        MenuItems = new List<NavigationViewItem>();
+        FooterMenuItems = new List<NavigationViewItem>();
+        BuildMenus();
+        _pluginManager.PluginsChanged += (_, _) => { BuildMenus(); };
     }
 
 
@@ -314,24 +324,35 @@ public partial class MainWindowViewModel :
         { GameProgress.Game3ExtraSecondHalf, "第3局加赛下半" }
     };
 
-    public List<NavigationViewItem> MenuItems { get; } =
-    [
-        new("启动页", SymbolRegular.Home24, typeof(HomePage)),
-        new("队伍信息", SymbolRegular.PeopleTeam24, typeof(TeamInfoPage)),
-        new("地图禁选", SymbolRegular.Map24, typeof(MapBpPage)),
-        new("识别助手", SymbolRegular.TextBulletListSquareEdit24, typeof(OcrHelperPage)),
-        new("禁用监管者", SymbolRegular.PresenterOff24, typeof(BanHunPage)),
-        new("禁用求生者", SymbolRegular.PersonProhibited24, typeof(BanSurPage)),
-        new("选择角色", SymbolRegular.PersonAdd24, typeof(PickPage)),
-        new("天赋特质", SymbolRegular.PersonWalking24, typeof(TalentPage)),
-        new("比分控制", SymbolRegular.NumberRow24, typeof(ScorePage)),
-        new("赛后数据", SymbolRegular.TextNumberListLtr24, typeof(GameDataPage)),
-    ];
+    public List<NavigationViewItem> MenuItems { get; }
 
-    public List<NavigationViewItem> FooterMenuItems { get; } =
-    [
-        new("前台管理", SymbolRegular.ShareScreenStart24, typeof(FrontManagePage)),
-        new("扩展功能", SymbolRegular.AppsAddIn24, typeof(ExtensionPage)),
-        new("设置", SymbolRegular.Settings24, typeof(SettingPage)),
-    ];
+    public List<NavigationViewItem> FooterMenuItems { get; }
+
+    private void BuildMenus()
+    {
+        MenuItems.Clear();
+        MenuItems.Add(new("启动页", SymbolRegular.Home24, typeof(HomePage)));
+        MenuItems.Add(new("队伍信息", SymbolRegular.PeopleTeam24, typeof(TeamInfoPage)));
+        MenuItems.Add(new("地图禁选", SymbolRegular.Map24, typeof(MapBpPage)));
+        MenuItems.Add(new("禁用监管者", SymbolRegular.PresenterOff24, typeof(BanHunPage)));
+        MenuItems.Add(new("禁用求生者", SymbolRegular.PersonProhibited24, typeof(BanSurPage)));
+        MenuItems.Add(new("选择角色", SymbolRegular.PersonAdd24, typeof(PickPage)));
+        MenuItems.Add(new("天赋特质", SymbolRegular.PersonWalking24, typeof(TalentPage)));
+        MenuItems.Add(new("比分控制", SymbolRegular.NumberRow24, typeof(ScorePage)));
+        MenuItems.Add(new("赛后数据", SymbolRegular.TextNumberListLtr24, typeof(GameDataPage)));
+
+        FooterMenuItems.Clear();
+        FooterMenuItems.Add(new("前台管理", SymbolRegular.ShareScreenStart24, typeof(FrontManagePage)));
+        FooterMenuItems.Add(new("扩展功能", SymbolRegular.AppsAddIn24, typeof(ExtensionPage)));
+        FooterMenuItems.Add(new("设置", SymbolRegular.Settings24, typeof(SettingPage)));
+
+        foreach (var item in _pluginManager.MenuNavItems)
+        {
+            MenuItems.Add(new NavigationViewItem(item.Title, SymbolRegular.AppsAddIn24, item.PageType));
+        }
+        foreach (var item in _pluginManager.FooterNavItems)
+        {
+            FooterMenuItems.Add(new NavigationViewItem(item.Title, SymbolRegular.AppsAddIn24, item.PageType));
+        }
+    }
 }

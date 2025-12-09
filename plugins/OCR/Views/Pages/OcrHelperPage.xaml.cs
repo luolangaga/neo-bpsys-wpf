@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace neo_bpsys_wpf.Views.Pages;
+namespace Bpsys.Plugin.OCR.Views.Pages;
 
 public partial class OcrHelperPage : Page
 {
