@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using neo_bpsys_wpf.Core.Abstractions.ViewModels;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using neo_bpsys_wpf.Core.Abstractions.ViewModels;
 using neo_bpsys_wpf.Extensions;
 using neo_bpsys_wpf.Core.Abstractions.Extensions;
 using CommunityToolkit.Mvvm.Input;
@@ -44,9 +44,12 @@ public partial class ExtensionPageViewModel : ViewModelBase
         var disabled = _settingsHostService.Settings.DisabledPlugins;
         if (!disabled.Contains(id))
         {
+            // 先动态卸载插件
+            _pluginManager.UnloadPlugin(id);
+            
+            // 然后添加到禁用列表并保存配置
             disabled.Add(id);
             _settingsHostService.SaveConfig();
-            _pluginManager.Reload();
         }
     }
 
@@ -57,8 +60,11 @@ public partial class ExtensionPageViewModel : ViewModelBase
         var disabled = _settingsHostService.Settings.DisabledPlugins;
         if (disabled.Remove(id))
         {
+            // 先从禁用列表移除并保存配置
             _settingsHostService.SaveConfig();
-            _pluginManager.Reload();
+            
+            // 然后动态加载插件
+            _pluginManager.LoadPlugin(id);
         }
     }
 

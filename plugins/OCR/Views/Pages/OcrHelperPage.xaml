@@ -16,17 +16,33 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+            <TextBlock VerticalAlignment="Center" Text="OCR 模型 | " Margin="0,0,10,0" />
+            <ComboBox Width="160" ItemsSource="{Binding OcrModelSpecList}" SelectedValue="{Binding OcrModelSpec}" Margin="0,0,10,0" />
+            <TextBlock VerticalAlignment="Center" Text="镜像源" Margin="0,0,10,0" />
+            <ComboBox Width="220" ItemsSource="{Binding MirrorList}" SelectedValue="{Binding OcrMirror}" Margin="0,0,10,0" />
+            <ui:Button Content="下载模型" Icon="{ui:SymbolIcon Symbol=DrawerArrowDownload24}" Command="{Binding DownloadOcrModelCommand}" Margin="0,0,10,0" />
+            <ui:Button Content="取消" Icon="{ui:SymbolIcon Symbol=Stop24}" Command="{Binding CancelOcrDownloadCommand}" Margin="0,0,10,0" />
+            <StackPanel Orientation="Horizontal" Visibility="{Binding IsOcrModelDownloading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <ui:ProgressRing Width="26" Height="26" IsIndeterminate="True" />
+                <TextBlock Margin="6,0,0,0" VerticalAlignment="Center" Text="{Binding OcrDownloadProgressText}" />
+                <TextBlock Margin="6,0,0,0" VerticalAlignment="Center" Text="{Binding OcrMbPerSecondSpeed}" />
+                <TextBlock Margin="6,0,0,0" VerticalAlignment="Center" Text="{Binding OcrRemainingTimeText}" />
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
             <TextBlock VerticalAlignment="Center" Text="选角识别 | " />
             <ui:Button Margin="10,0,0,0" Command="{Binding SelectPickOcrRowRegionsCommand}" Content="框选选角一排（求生+监管）" />
             <ui:ToggleSwitch Margin="10,0,0,0" IsChecked="{Binding IsPickRowModeEnabled}" />
             <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Text="启用选角一排模式" />
         </StackPanel>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
             <TextBlock VerticalAlignment="Center" Text="禁用识别 | " />
             <ui:Button Margin="10,0,0,0" Command="{Binding SelectBanSurOcrRowRegionCommand}" Content="框选禁用求生一排" />
             <ui:Button Margin="10,0,0,0" Command="{Binding SelectBanHunOcrRowRegionCommand}" Content="框选禁用监管一排" />
@@ -40,7 +56,7 @@
             </StackPanel>
         </StackPanel>
 
-        <ScrollViewer Grid.Row="2">
+        <ScrollViewer Grid.Row="3">
             <StackPanel>
                 <TextBlock Margin="0,0,0,8" Text="识别提示：请在游戏BP界面框选完整的一排角色名字区域，保持画面清晰。" />
                 <ui:InfoBar Title="使用说明" Message="选角与禁用识别已合并到本页面，支持模糊匹配自动填充。" Severity="Informational" />

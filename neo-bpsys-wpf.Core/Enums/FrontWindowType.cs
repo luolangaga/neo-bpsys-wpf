@@ -15,5 +15,9 @@ public enum FrontWindowType
     ScoreHunWindow,
     ScoreGlobalWindow,
     GameDataWindow,
-    WidgetsWindow
+    WidgetsWindow,
+    /// <summary>
+    /// 插件自定义控件窗口
+    /// </summary>
+    PluginOverlayWindow
 }

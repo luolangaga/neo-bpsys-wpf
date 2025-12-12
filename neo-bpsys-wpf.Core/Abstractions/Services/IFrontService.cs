@@ -1,5 +1,6 @@
 ﻿using neo_bpsys_wpf.Core.Enums;
 using System.Windows;
+using neo_bpsys_wpf.Core.Abstractions.Extensions;
 
 namespace neo_bpsys_wpf.Core.Abstractions.Services;
 
@@ -125,4 +126,21 @@ public interface IFrontService
     /// </summary>
     /// <param name="windowType">窗口类型</param>
     void ShowWindow(FrontWindowType windowType);
+    
+    /// <summary>
+    /// 添加插件覆盖控件到插件窗口
+    /// </summary>
+    /// <param name="descriptor">插件覆盖控件描述符</param>
+    void AddPluginOverlayControl(PluginOverlayDescriptor descriptor);
+    
+    /// <summary>
+    /// 移除插件覆盖控件
+    /// </summary>
+    /// <param name="controlId">控件ID</param>
+    void RemovePluginOverlayControl(string controlId);
+    
+    /// <summary>
+    /// 清除所有插件覆盖控件
+    /// </summary>
+    void ClearPluginOverlayControls();
 }

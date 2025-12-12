@@ -14,7 +14,7 @@ namespace neo_bpsys_wpf.Core.Models;
 public partial class Settings : ViewModelBase
 {
     public bool ShowTip { get; set; } = true;
-    public string? PluginMarketBaseUrl { get; set; } = "http://localhost:5228";
+    public string? PluginMarketBaseUrl { get; set; } = "https://bpapi.idvevent.cn/";
     
     public string? AsgEmail { get; set; } = string.Empty;
     public string? AsgPassword { get; set; } = string.Empty;
@@ -25,6 +25,8 @@ public partial class Settings : ViewModelBase
     [ObservableProperty] private GameDataWindowSettings _gameDataWindowSettings = new();
     [ObservableProperty] private WidgetsWindowSettings _widgetsWindowSettings = new();
     [ObservableProperty] private OcrSettings _ocrSettings = new();
+    // 插件控件显示配置，用于保存每个插件控件的显示/隐藏状态
+    public PluginControlDisplayConfig PluginControlDisplayConfig { get; set; } = new PluginControlDisplayConfig();
 }
 
 /// <summary>

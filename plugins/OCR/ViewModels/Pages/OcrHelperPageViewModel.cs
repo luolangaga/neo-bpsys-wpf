@@ -1,9 +1,11 @@
+#pragma warning disable CA1416 // Windows-only plugin, suppress platform compatibility analyzer noise
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using neo_bpsys_wpf.Core;
 using neo_bpsys_wpf.Core.Abstractions.Services;
 using neo_bpsys_wpf.Core.Abstractions.ViewModels;
 using neo_bpsys_wpf.Core.Models;
+using System.Collections.ObjectModel;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using Sdcb.PaddleInference;
@@ -21,9 +23,10 @@ public partial class OcrHelperPageViewModel : ViewModelBase, IDisposable
 {
     public OcrHelperPageViewModel() { }
 
-    private readonly ISharedDataService _sharedDataService;
-    private readonly ISettingsHostService _settingsHostService;
-    private readonly IOcrModelService _ocrModelService;
+    private readonly ISharedDataService _sharedDataService = null!;
+    private readonly ISettingsHostService _settingsHostService = null!;
+    private readonly IOcrModelService _ocrModelService = null!;
+    private readonly IMessageBoxService _messageBoxService = null!;
 
     private DispatcherTimer? _ocrTimer;
     private PaddleOcrAll? _ocrAll;
@@ -35,14 +38,36 @@ public partial class OcrHelperPageViewModel : ViewModelBase, IDisposable
 
     [ObservableProperty] private bool _isOcrRecognizing;
     [ObservableProperty] private bool _isOcrModelDownloading;
+    [ObservableProperty] private double _ocrDownloadProgress;
+    [ObservableProperty] private string _ocrDownloadProgressText = string.Empty;
+    [ObservableProperty] private string _ocrMbPerSecondSpeed = string.Empty;
+    [ObservableProperty] private string _ocrRemainingTimeText = string.Empty;
+    public ObservableCollection<string> OcrModelSpecList { get; } = ["ChineseV3", "ChineseV4", "EnglishV3", "EnglishV4"];
+    public ObservableCollection<string> MirrorList { get; } =
+    [
+        @"https://gh-proxy.com/",
+        @"https://ghproxy.net/",
+        @"https://ghfast.top/",
+        @"https://hk.gh-proxy.com/",
+        @"https://cdn.gh-proxy.com/",
+        @"https://edgeone.gh-proxy.com/",
+        @"https://gh.plfjy.top/",
+        @""
+    ];
+    [ObservableProperty] private string _ocrModelSpec = "ChineseV3";
+    [ObservableProperty] private string _ocrMirror = string.Empty;
     [ObservableProperty] private bool _isPickRowModeEnabled;
     [ObservableProperty] private bool _isBanRowModeEnabled;
 
-    public OcrHelperPageViewModel(ISharedDataService sharedDataService, ISettingsHostService settingsHostService, IOcrModelService ocrModelService)
+    public OcrHelperPageViewModel(ISharedDataService sharedDataService, ISettingsHostService settingsHostService, IOcrModelService ocrModelService, IMessageBoxService messageBoxService)
     {
         _sharedDataService = sharedDataService;
         _settingsHostService = settingsHostService;
         _ocrModelService = ocrModelService;
+        _messageBoxService = messageBoxService;
+        _ocrModelService.ProgressChanged += OcrModelService_ProgressChanged;
+        _ocrModelSpec = _settingsHostService.Settings.OcrSettings.ModelSpec;
+        _ocrMirror = _settingsHostService.Settings.OcrSettings.Mirror;
         _isPickRowModeEnabled = _settingsHostService.Settings.BpWindowSettings.PickOcrRowMode;
         _isBanRowModeEnabled = _settingsHostService.Settings.BpWindowSettings.BanOcrRowMode;
     }
@@ -50,6 +75,62 @@ public partial class OcrHelperPageViewModel : ViewModelBase, IDisposable
     partial void OnIsOcrRecognizingChanged(bool value)
     {
         if (value) StartOcrTimer(); else StopOcrTimer();
+    }
+
+    private void OcrModelService_ProgressChanged(object? sender, OcrDownloadProgressEventArgs e)
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            IsOcrModelDownloading = true;
+            OcrDownloadProgress = e.ProgressPercentage;
+            OcrDownloadProgressText = e.ProgressPercentage.ToString("0.00") + "%";
+            OcrMbPerSecondSpeed = (e.BytesPerSecondSpeed / 1024 / 1024).ToString("0.00") + " MB/s";
+            OcrRemainingTimeText = e.EstimatedRemaining == null ? "--" : e.EstimatedRemaining.Value.ToString();
+        });
+    }
+
+    [RelayCommand]
+    private async Task DownloadOcrModel()
+    {
+        IsOcrModelDownloading = true;
+        var spec = OcrModelSpec;
+        var mirror = OcrMirror;
+        _ocrDownloadCts = new CancellationTokenSource();
+        try
+        {
+            await _ocrModelService.EnsureAsync(spec, mirror, _ocrDownloadCts.Token);
+            await _messageBoxService.ShowInfoAsync("OCR模型下载完成");
+        }
+        catch (OperationCanceledException)
+        {
+            await _messageBoxService.ShowInfoAsync("已取消 OCR 模型下载");
+        }
+        catch (Exception e)
+        {
+            await _messageBoxService.ShowErrorAsync($"OCR模型下载失败\n{e.Message}");
+        }
+        finally
+        {
+            Application.Current.Dispatcher.Invoke(() => { IsOcrModelDownloading = false; });
+            _ocrDownloadCts?.Dispose();
+            _ocrDownloadCts = null;
+        }
+    }
+
+    [RelayCommand]
+    private void CancelOcrDownload()
+    {
+        _ocrDownloadCts?.Cancel();
+    }
+
+    partial void OnOcrModelSpecChanged(string value)
+    {
+        _settingsHostService.Settings.OcrSettings.ModelSpec = value;
+    }
+
+    partial void OnOcrMirrorChanged(string value)
+    {
+        _settingsHostService.Settings.OcrSettings.Mirror = value;
     }
 
     [RelayCommand]
@@ -348,3 +429,4 @@ public partial class OcrHelperPageViewModel : ViewModelBase, IDisposable
         _ocrDownloadCts = null;
     }
 }
+#pragma warning restore CA1416

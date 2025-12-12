@@ -138,5 +138,14 @@ public partial class FrontManagePageViewModel : ViewModelBase
         _frontService.RestoreInitialPositions(FrontWindowType.GameDataWindow);
     }
 
+    /// <summary>
+    /// 重置插件覆盖窗口的配置
+    /// </summary>
+    [RelayCommand]
+    private void ResetPluginOverlayWindowElementsPosition()
+    {
+        _frontService.RestoreInitialPositions(FrontWindowType.PluginOverlayWindow);
+    }
+
     #endregion
 }

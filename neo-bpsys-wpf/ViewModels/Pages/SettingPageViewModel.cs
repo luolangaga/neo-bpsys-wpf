@@ -40,17 +40,14 @@ public partial class SettingPageViewModel : ViewModelBase
     private readonly IFrontService _frontService;
     private readonly IFilePickerService _filePickerService;
     private readonly ISharedDataService _sharedDataService;
-    private readonly IASGService _asgService;
     private readonly IMessageBoxService _messageBoxService;
     public IUpdaterService UpdaterService { get; }
     private readonly DownloadService? _downloader;
-    private readonly IOcrModelService _ocrModelService;
-    private CancellationTokenSource? _ocrCts;
 
     public SettingPageViewModel(IUpdaterService updaterService, ISettingsHostService settingsHostService,
         ITextSettingsNavigationService textSettingsNavigationService, IFrontService frontService,
         IFilePickerService filePickerService, IMessageBoxService messageBoxService,
-        ISharedDataService sharedDataService, IASGService asgService, IOcrModelService ocrModelService)
+        ISharedDataService sharedDataService)
     {
         AppVersion = "版本 v" + Application.ResourceAssembly.GetName().Version!;
         UpdaterService = updaterService;
@@ -60,8 +57,6 @@ public partial class SettingPageViewModel : ViewModelBase
         _filePickerService = filePickerService;
         _sharedDataService = sharedDataService;
         _messageBoxService = messageBoxService;
-        _asgService = asgService;
-        _ocrModelService = ocrModelService;
         if (updaterService.Downloader is Downloader.DownloadService downloader)
         {
             _downloader = downloader;
@@ -69,8 +64,6 @@ public partial class SettingPageViewModel : ViewModelBase
             _downloader.DownloadFileCompleted += Downloader_DownloadFileCompleted;
             _downloader.DownloadStarted += Downloader_DownloadStarted;
         }
-
-        _ocrModelService.ProgressChanged += OcrModelService_ProgressChanged;
 
         _systemFonts = FontsHelper.GetSystemFonts();
 
@@ -141,8 +134,6 @@ public partial class SettingPageViewModel : ViewModelBase
 
         GlobalScoreTotalMargin = _settingsHostService.Settings.ScoreWindowSettings.GlobalScoreTotalMargin;
         _sharedDataService.GlobalScoreTotalMargin = GlobalScoreTotalMargin;
-        AsgEmail = _settingsHostService.Settings.AsgEmail ?? string.Empty;
-        AsgPassword = _settingsHostService.Settings.AsgPassword ?? string.Empty;
     }
 
     #region 自动更新
@@ -223,76 +214,6 @@ public partial class SettingPageViewModel : ViewModelBase
         @"https://gh.plfjy.top/",
         @""
     ];
-
-    #endregion
-
-    #region OCR模型下载
-
-    [ObservableProperty] private bool _isOcrModelDownloading;
-    [ObservableProperty] private double _ocrDownloadProgress;
-    [ObservableProperty] private string _ocrDownloadProgressText = string.Empty;
-    [ObservableProperty] private string _ocrMbPerSecondSpeed = string.Empty;
-    [ObservableProperty] private string _ocrRemainingTimeText = string.Empty;
-    public ObservableCollection<string> OcrModelSpecList { get; } = ["ChineseV3", "ChineseV4", "EnglishV3", "EnglishV4"];
-
-    [ObservableProperty] private string _ocrModelSpec = "ChineseV3";
-    [ObservableProperty] private string _ocrMirror = string.Empty;
-
-    private void OcrModelService_ProgressChanged(object? sender, OcrDownloadProgressEventArgs e)
-    {
-        Application.Current.Dispatcher.Invoke(() =>
-        {
-            IsOcrModelDownloading = true;
-            OcrDownloadProgress = e.ProgressPercentage;
-            OcrDownloadProgressText = e.ProgressPercentage.ToString("0.00") + "%";
-            OcrMbPerSecondSpeed = (e.BytesPerSecondSpeed / 1024 / 1024).ToString("0.00") + " MB/s";
-            OcrRemainingTimeText = e.EstimatedRemaining == null ? "--" : e.EstimatedRemaining.Value.ToString();
-        });
-    }
-
-    [RelayCommand]
-    private async Task DownloadOcrModel()
-    {
-        IsOcrModelDownloading = true;
-        var spec = OcrModelSpec;
-        var mirror = OcrMirror;
-        _ocrCts = new CancellationTokenSource();
-        try
-        {
-            await _ocrModelService.EnsureAsync(spec, mirror, _ocrCts.Token);
-            await _messageBoxService.ShowInfoAsync("OCR模型下载完成");
-        }
-        catch (OperationCanceledException)
-        {
-            await _messageBoxService.ShowInfoAsync("已取消 OCR 模型下载");
-        }
-        catch (Exception e)
-        {
-            await _messageBoxService.ShowErrorAsync($"OCR模型下载失败\n{e.Message}");
-        }
-        finally
-        {
-            Application.Current.Dispatcher.Invoke(() => { IsOcrModelDownloading = false; });
-            _ocrCts?.Dispose();
-            _ocrCts = null;
-        }
-    }
-
-    [RelayCommand]
-    private void CancelOcrDownload()
-    {
-        _ocrCts?.Cancel();
-    }
-
-    partial void OnOcrModelSpecChanged(string value)
-    {
-        _settingsHostService.Settings.OcrSettings.ModelSpec = value;
-    }
-
-    partial void OnOcrMirrorChanged(string value)
-    {
-        _settingsHostService.Settings.OcrSettings.Mirror = value;
-    }
 
     #endregion
 
@@ -555,21 +476,6 @@ public partial class SettingPageViewModel : ViewModelBase
         get => _settingsHostService.Settings.ScoreWindowSettings.IsCampIconBlackVerEnabled;
         set => _ = SetScoreGlobalCampIconBlackVerAsync(value);
     }
-
-
-    [ObservableProperty] private string _asgEmail = string.Empty;
-    [ObservableProperty] private string _asgPassword = string.Empty;
-
-    [RelayCommand]
-    private async Task SaveAsgAccountAndLogin()
-    {
-        _settingsHostService.Settings.AsgEmail = AsgEmail;
-        _settingsHostService.Settings.AsgPassword = AsgPassword;
-        _settingsHostService.SaveConfig();
-        var ok = await _asgService.LoginAsync(AsgEmail, AsgPassword);
-        await _messageBoxService.ShowInfoAsync(ok ? "登录成功" : "登录失败");
-    }
-
     private async Task SetScoreGlobalCampIconBlackVerAsync(bool isBlackVer)
     {
         if (await _messageBoxService.ShowConfirmAsync("确认提示", $"是否切换阵营图标为{(isBlackVer ? "黑色" : "白色")}？"))

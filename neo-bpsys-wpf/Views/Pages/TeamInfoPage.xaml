@@ -24,67 +24,6 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Page.Resources>
     <WrapPanel Orientation="Horizontal">
-        <Border Style="{StaticResource Card}">
-            <StackPanel>
-                <TextBlock Text="第五人格赛事统一平台接口对接" />
-                
-
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <ui:TextBox Width="300" PlaceholderText="搜索赛事关键词" Text="{Binding EventQuery}" />
-                    <ui:Button Margin="10,0,0,0" Content="搜索赛事" Icon="{ui:SymbolIcon Symbol=Search24}" Command="{Binding SearchEventsCommand}" />
-                    <ui:Button Margin="10,0,0,0" Content="加载赛程" Icon="{ui:SymbolIcon Symbol=ArrowSort24}" Command="{Binding LoadMatchesCommand}" />
-                    <ui:Button Margin="10,0,0,0" Content="导入选中赛程两队信息" Icon="{ui:SymbolIcon Symbol=ArrowImport24}" Command="{Binding ImportSelectedMatchTeamsCommand}" />
-                </StackPanel>
-
-                <Grid Margin="0,8,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*" />
-                        <ColumnDefinition Width="3*" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="赛事搜索结果" />
-                        <ListBox ItemsSource="{Binding EventResults}" SelectedItem="{Binding SelectedEvent}" DisplayMemberPath="Name" MinHeight="120" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="赛程列表" />
-                            <StackPanel Orientation="Horizontal" Margin="10,0,0,0" Visibility="{Binding IsMatchResultsNotEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <ui:TextBox Width="60" Margin="0,0,0,0" PlaceholderText="页码" Text="{Binding MatchesPage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                <ui:TextBox Width="60" Margin="10,0,0,0" PlaceholderText="每页" Text="{Binding MatchesPageSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                <ui:Button Margin="10,0,0,0" Command="{Binding PrevMatchesPageCommand}" ToolTip="上一页">
-                                    <ui:SymbolIcon Symbol="ArrowLeft24" />
-                                </ui:Button>
-                                <ui:Button Margin="5,0,0,0" Command="{Binding NextMatchesPageCommand}" ToolTip="下一页">
-                                    <ui:SymbolIcon Symbol="ArrowRight24" />
-                                </ui:Button>
-                                <ui:Button Margin="5,0,0,0" Command="{Binding RefreshMatchesCommand}" ToolTip="刷新">
-                                    <ui:SymbolIcon Symbol="ArrowClockwise24" />
-                                </ui:Button>
-                            </StackPanel>
-                        </StackPanel>
-                        <ListBox ItemsSource="{Binding MatchResults}" SelectedItem="{Binding SelectedMatch}" MinHeight="120">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="SelectionChanged">
-                                    <i:InvokeCommandAction Command="{Binding ImportSelectedMatchTeamsCommand}" />
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="主队：" />
-                                        <TextBlock Text="{Binding HomeTeamName}" />
-                                        <TextBlock Margin="10,0,0,0" Text="客队：" />
-                                        <TextBlock Text="{Binding AwayTeamName}" />
-                                        <TextBlock Margin="10,0,0,0" Text=" | 赛事：" />
-                                        <TextBlock Text="{Binding EventName}" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </StackPanel>
-                </Grid>
-            </StackPanel>
-        </Border>
         <!--  main team  -->
         <Border DataContext="{Binding MainTeamInfoViewModel}" Style="{StaticResource Card}">
             <!--  basic info  -->

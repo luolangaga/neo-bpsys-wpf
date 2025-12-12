@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Neo.Bpsys.Plugin.SDK</id>
+    <version>1.0.0</version>
+    <authors>罗澜</authors>
+    <owners>罗澜</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Neo Bpsys 插件开发SDK，包含接口、基础模型、消息、枚举等，适用于Neo Bpsys插件开发。</description>
+    <tags>NeoBpsys Plugin SDK</tags>
+    <dependencies>
+      <dependency id="CommunityToolkit.Mvvm" version="8.4.0" />
+      <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="9.0.9" />
+      <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="9.0.9" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\neo-bpsys-wpf.Core\Abstractions\**\*.cs" target="content\Abstractions" />
+    <file src="..\neo-bpsys-wpf.Core\Enums\*.cs" target="content\Enums" />
+    <file src="..\neo-bpsys-wpf.Core\Helpers\*.cs" target="content\Helpers" />
+    <file src="..\neo-bpsys-wpf.Core\Messages\*.cs" target="content\Messages" />
+    <file src="..\neo-bpsys-wpf.Core\Models\*.cs" target="content\Models" />
+    <file src="..\neo-bpsys-wpf.Core\AppConstants.cs" target="content" />
+  </files>
+</package>

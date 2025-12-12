@@ -30,10 +30,10 @@ public partial class PickPageViewModel : ViewModelBase, IRecipient<HighlightMess
         //Decorative constructor, used in conjunction with IsDesignTimeCreatable=True
     }
 
-    private readonly ISharedDataService _sharedDataService;
-    private readonly IFrontService _frontService;
-    private readonly ISettingsHostService _settingsHostService;
-    private readonly IOcrModelService _ocrModelService;
+    private readonly ISharedDataService _sharedDataService = null!;
+    private readonly IFrontService _frontService = null!;
+    private readonly ISettingsHostService _settingsHostService = null!;
+    private readonly IOcrModelService _ocrModelService = null!;
     private DispatcherTimer? _ocrTimer;
     private PaddleOcrAll? _ocrAll;
     private bool _isOcrRunning;

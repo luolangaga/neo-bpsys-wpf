@@ -7,8 +7,8 @@ jobs:
     env:
       BUILD_PATH: ./build/neo-bpsys-wpf
       PROJ_PATH: ./neo-bpsys-wpf/neo-bpsys-wpf.csproj
-      INSTALLER_OUTPUT: ./build/neo-bpsys-wpf_Installer.msi
-      WIX_ARCH: x64
+      INSTALLER_GENERATE_DIR: ./InstallerGenerate
+      INSTALLER_OUTPUT: ./build/neo-bpsys-wpf_Installer.exe
 
     runs-on: windows-latest
 
@@ -28,94 +28,17 @@ jobs:
         mkdir .\build
         dotnet publish ${{ env.PROJ_PATH }} -c Release -o ${{ env.BUILD_PATH }}
 
-    - name: Compute Version (Assembly + run number)
+    - name: Pack Installer
+      shell: cmd
+      run : |
+        "${{ env.INSTALLER_GENERATE_DIR }}/Inno Setup 6/ISCC.exe" "${{ env.INSTALLER_GENERATE_DIR }}/build_Installer.iss"
+
+    - name: Get Version
       shell: pwsh
-      run: |
-        $asmFile = Join-Path (Split-Path -Path $env:PROJ_PATH -Parent) 'AssemblyInfo.cs'
-        $match = Select-String -Path $asmFile -Pattern '\[assembly:\s*AssemblyVersion\("([0-9]+(?:\.[0-9]+){2})\.\*"\)\]'
-        if ($match) {
-          $base = $match.Matches[0].Groups[1].Value
-        } else {
-          $base = '1.0.0'
-        }
-        $parts = $base.Split('.')
-        $major = [int]$parts[0]
-        $minor = [int]$parts[1]
-        $patch = [int]$parts[2]
-        $build = $patch * 1000 + [int]$env:GITHUB_RUN_NUMBER
-        $version = "$major.$minor.$build"
+      run : |
+        $file = "${{ env.INSTALLER_OUTPUT }}"
+        $version = (Get-Item $file).VersionInfo.ProductVersion.Trim()
         echo "VERSION=$version" >> $env:GITHUB_ENV
-
-    - name: Install WiX Toolset 3.11
-      shell: pwsh
-      run: |
-        choco install wixtoolset -y
-    
-    - name: Locate WiX bin
-      shell: pwsh
-      run: |
-        $candidates = @(
-          'C:\Program Files (x86)\WiX Toolset v3.11\bin',
-          'C:\Program Files (x86)\WiX Toolset v3.14\bin',
-          'C:\Program Files\WiX Toolset v3.14\bin'
-        )
-        $wixBin = $null
-        foreach ($c in $candidates) { if (Test-Path $c) { $wixBin = $c; break } }
-        if (-not $wixBin) {
-          $cmd = Get-Command heat.exe -ErrorAction SilentlyContinue
-          if ($cmd) { $wixBin = Split-Path $cmd.Path }
-        }
-        if (-not $wixBin) { throw 'WiX bin path not found' }
-        echo "WIX_BIN=$wixBin" >> $env:GITHUB_ENV
-
-    - name: Pack MSI (WiX)
-      shell: pwsh
-      run: |
-        & "$env:WIX_BIN\heat.exe" dir "${{ env.BUILD_PATH }}" -cg FilesGroup -dr INSTALLDIR -sreg -srd -ag -var var.SourceDir -o harvest.wxs
-        $productWxs = @"
-        <?xml version="1.0" encoding="UTF-8"?>
-        <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-          <Product Id="*" Name="bpsys-wpf-idvevent" Manufacturer="PLFJY" Version="${{ env.VERSION }}" Language="2052" UpgradeCode="{980E3856-4BEE-470D-A73D-6507CA035EF8}" Codepage="936">
-            <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" SummaryCodepage="936" />
-            <MajorUpgrade DowngradeErrorMessage="已存在更高版本，无法降级安装。" />
-            <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
-            <Feature Id="MainFeature" Title="bpsys-wpf-idvevent" Level="1">
-              <ComponentGroupRef Id="FilesGroup" />
-            </Feature>
-            <UIRef Id="WixUI_InstallDir" />
-            <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
-          </Product>
-          <Fragment>
-            <Directory Id="TARGETDIR" Name="SourceDir">
-              <Directory Id="ProgramFiles64Folder">
-                <Directory Id="INSTALLDIR" Name="bpsys-wpf-idvevent" />
-              </Directory>
-            </Directory>
-          </Fragment>
-        </Wix>
-        "@
-        Set-Content -Path product.wxs -Value $productWxs -Encoding UTF8
-        
-        Write-Host "Running Candle..."
-        & "$env:WIX_BIN\candle.exe" -arch $env:WIX_ARCH -ext WixUIExtension -dSourceDir="${{ env.BUILD_PATH }}" harvest.wxs product.wxs
-        
-        Write-Host "Running Light..."
-        & "$env:WIX_BIN\light.exe" -ext WixUIExtension harvest.wixobj product.wixobj -out "${{ env.INSTALLER_OUTPUT }}"
-
-    - name: Verify MSI exists
-      shell: pwsh
-      run: |
-        if (-not (Test-Path "${{ env.INSTALLER_OUTPUT }}")) {
-          Write-Error "MSI not generated at ${{ env.INSTALLER_OUTPUT }}"
-        }
-        Get-Item "${{ env.INSTALLER_OUTPUT }}" | Format-List Name,Length,LastWriteTime
-
-    - name: Upload MSI artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: neo-bpsys-wpf_Installer
-        path: ${{ env.INSTALLER_OUTPUT }}
-        if-no-files-found: error
 
     - name: Draft Release
       uses: softprops/action-gh-release@v2

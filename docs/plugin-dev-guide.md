@@ -1,113 +1,140 @@
 # 插件开发新手指南
-新手建议按“分章索引”逐步学习与实践：
-- 插件开发索引：`docs/plugins/index.md`
-- 快速上手：`docs/plugins/getting-started.md`
-- 项目与输出配置：`docs/plugins/project-setup.md`
-- 核心接口与生命周期：`docs/plugins/interfaces.md`
-- 菜单与页面注入：`docs/plugins/ui-navigation.md`
-- 初始化场景与交互示例：`docs/plugins/init-examples.md`
-- 热加载与禁用：`docs/plugins/hot-reload-disable.md`
-- 测试与调试：`docs/plugins/testing-debugging.md`
-- 最佳实践：`docs/plugins/best-practices.md`
-- FAQ 常见问题：`docs/plugins/faq.md`
 
-本指南面向第一次为本项目编写插件的开发者，帮助你用最短时间上手、构建并运行一个可加载的插件。插件系统基于 .NET/WPF 与依赖注入实现，支持运行时热加载与禁用。
+> **欢迎！** 这份指南将手把手教你开发第一个插件，就像搭积木一样简单。
 
-## 前置条件
+## 📚 学习路线图
 
-- .NET SDK：`net9.0-windows7.0`
-- IDE：Visual Studio 2022 或 Rider，亦可使用命令行
-- 目标平台：Windows 10/11
+**新手推荐按以下顺序学习：**
 
-## 插件目录与输出
+1. 📖 [快速上手](plugins/getting-started.md) - 10分钟创建你的第一个插件
+2. 🔧 [项目配置](plugins/project-setup.md) - 了解项目结构和配置
+3. 🎯 [核心概念](plugins/interfaces.md) - 理解插件的工作原理
+4. 🎨 [添加菜单页面](plugins/ui-navigation.md) - 让你的插件有界面
+5. 🖼️ [前台组件开发](plugins/overlay-controls.md) - 在游戏界面上显示自定义控件
+6. 🔥 [热加载与调试](plugins/hot-reload-disable.md) - 不重启就能测试插件
+7. ✅ [最佳实践](plugins/best-practices.md) - 写出优雅的插件代码
+8. ❓ [常见问题](plugins/faq.md) - 遇到问题先来这里找答案
 
-- 插件以独立 `Class Library` 项目形式存在，建议置于仓库 `plugins/你的插件名` 目录。
-- 构建时需要将插件输出到主程序的 `Plugins` 目录，方便应用在启动时扫描与加载。
+## 🎯 什么是插件？
 
-示例 `csproj`（关键项：目标框架、引用 Core、启用 WPF、输出路径）：
+想象一下：
+- **主程序** = 手机操作系统
+- **插件** = 你安装的各种APP
+
+插件可以：
+- ✨ 添加新功能（比如OCR识别、ASG数据统计）
+- 🎨 添加新界面（比如自定义的设置页面）
+- 🖼️ 在前台显示自定义控件（比如倒计时器、队伍得分）
+- 🔌 随时启用/禁用，无需重启程序
+
+## ⚡ 5分钟快速了解
+
+### 你需要什么？
+- ✅ Windows 10/11
+- ✅ .NET 9.0 SDK
+- ✅ Visual Studio 2022 或 Rider（也可以用命令行）
+
+### 推荐依赖方式：使用 NuGet 包
+
+从 1.0 版本起，推荐通过 NuGet 包直接引用插件开发 SDK，无需手动拷贝源码。
+
+**安装（命令行示例）：**
+
+```bash
+dotnet add package Luolan.Bpsys.Sdk --version 1.0.0
+```
+
+如果使用本地 NuGet 源（项目仓库内的 `nuget` 文件夹），可以在 Visual Studio 的“管理 NuGet 程序包”中添加本地源并安装。推荐统一用 NuGet 包，升级和依赖管理更方便。
+
+---
+
+### 插件的基本结构
+```csharp
+// 就这么简单！实现这个接口就是一个插件了
+public class MyPlugin : IPlugin
+{
+    // 1️⃣ 告诉系统你的插件叫什么名字
+    public PluginMetadata Metadata { get; } = new()
+    {
+        Id = "my.awesome.plugin",
+        Name = "我的超棒插件",
+        Version = "1.0.0"
+    };
+    
+    // 2️⃣ 注册你需要的服务（可选）
+    public void ConfigureServices(IServiceCollection services) { }
+    
+    // 3️⃣ 插件初始化时会调用这个方法
+    public void Initialize(IPluginContext context) { }
+    
+    // 4️⃣ 返回你要添加的菜单项（可选）
+    public IEnumerable<PluginNavigationItem> GetMenuItems() 
+    { 
+        return Array.Empty<PluginNavigationItem>(); 
+    }
+    
+    // 5️⃣ 返回底部菜单项（可选）
+    public IEnumerable<PluginNavigationItem> GetFooterItems() 
+    { 
+        return Array.Empty<PluginNavigationItem>(); 
+    }
+    
+    // 6️⃣ 返回前台显示的自定义控件（可选）
+    public IEnumerable<PluginOverlayDescriptor> GetOverlayControls()
+    {
+        return Array.Empty<PluginOverlayDescriptor>();
+    }
+}
+```
+
+## 🚀 马上开始
+
+准备好了吗？点击 [快速上手](plugins/getting-started.md) 创建你的第一个插件！
+
+---
+
+## 📦 插件的输出位置
+
+插件需要输出到主程序的 `Plugins` 目录，这样程序启动时才能找到并加载它。
+
+**示例项目配置（.csproj）：**
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0-windows7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <Deterministic>false</Deterministic>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <AssemblyName>Bpsys.Plugin.Sample</AssemblyName>
-    <RootNamespace>Bpsys.Plugin.Sample</RootNamespace>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>$(MSBuildThisFileDirectory)..\..\neo-bpsys-wpf\bin\$(Configuration)\net9.0-windows7.0\Plugins\</OutputPath>
     <UseWPF>true</UseWPF>
+    <!-- 输出到主程序的 Plugins 目录 -->
+    <OutputPath>..\..\neo-bpsys-wpf\bin\$(Configuration)\net9.0-windows7.0\Plugins\</OutputPath>
   </PropertyGroup>
+  
   <ItemGroup>
+    <!-- 引用核心库 -->
     <ProjectReference Include="..\..\neo-bpsys-wpf.Core\neo-bpsys-wpf.Core.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="WPF-UI" Version="4.0.3" />
   </ItemGroup>
 </Project>
 ```
 
-参考：`plugins/ASG/ASG.Plugin.csproj:12` 启用了 `UseWPF`；`plugins/ASG/ASG.Plugin.csproj:10` 指定了输出路径到主程序 `Plugins` 目录。
+💡 **提示：** 查看现有插件的 `.csproj` 文件作为参考：
+- `plugins/ASG/ASG.Plugin.csproj`
+- `plugins/OCR/OCR.Plugin.csproj`
 
-## 核心接口与生命周期
+---
 
-插件需实现 `IPlugin` 接口，完成元数据、服务注册、初始化与菜单/页签注入：
+## 🎓 深入学习
 
-```csharp
-public class SamplePlugin : IPlugin
-{
-    public PluginMetadata Metadata { get; } = new()
-    {
-        Id = "bpsys.sample",
-        Name = "示例插件",
-        Version = "1.0.0",
-        Description = "演示如何开发一个插件",
-        Author = "you"
-    };
+### 核心概念速览
 
-    public void ConfigureServices(IServiceCollection services)
-    {
-        // 在此注册你的服务到 DI 容器
-    }
-
-    public void Initialize(IPluginContext context)
-    {
-        // 运行期初始化：订阅事件、访问 MainWindow、读取 Settings 等
-    }
-
-    public IEnumerable<PluginNavigationItem> GetMenuItems()
-    {
-        // 返回要挂到左侧菜单的页面
-        return Array.Empty<PluginNavigationItem>();
-    }
-
-    public IEnumerable<PluginNavigationItem> GetFooterItems()
-    {
-        // 返回底部菜单项（如外链/关于）
-        return Array.Empty<PluginNavigationItem>();
-    }
-}
+#### 1️⃣ 插件生命周期
+```
+发现插件 → 注册服务 → 初始化 → 运行中 → 清理
+   ↓           ↓          ↓        ↓       ↓
+扫描DLL   ConfigureServices Initialize  正常工作  Dispose
 ```
 
-接口定义位置：
+#### 2️⃣ 插件可以做什么？
 
-- `neo-bpsys-wpf.Core/Abstractions/Extensions/IPlugin.cs:11`（`PluginMetadata`）
-- `neo-bpsys-wpf.Core/Abstractions/Extensions/IPlugin.cs:12`（`ConfigureServices`）
-- `neo-bpsys-wpf.Core/Abstractions/Extensions/IPlugin.cs:13`（`Initialize`）
-- `neo-bpsys-wpf.Core/Abstractions/Extensions/IPlugin.cs:14`（`GetMenuItems`）
-- `neo-bpsys-wpf.Core/Abstractions/Extensions/IPlugin.cs:15`（`GetFooterItems`）
-- `neo-bpsys-wpf.Core/Abstractions/Extensions/IPlugin.cs:20`（`IPluginContext.Services`）
-- `neo-bpsys-wpf.Core/Abstractions/Extensions/IPlugin.cs:23`（`IPluginContext.MainWindow`）
-
-## 菜单与页面注入
-
-插件可以把自己的页面挂到主界面菜单。参考 OCR 插件：
-
-- 注册页面及其 ViewModel 到 DI：`plugins/OCR/OcrPlugin.cs:18`
-- 返回菜单项并指定页面类型：`plugins/OCR/OcrPlugin.cs:33`、`plugins/OCR/OcrPlugin.cs:39`
-
+**添加菜单页面：**
 ```csharp
 public IEnumerable<PluginNavigationItem> GetMenuItems()
 {
@@ -115,39 +142,93 @@ public IEnumerable<PluginNavigationItem> GetMenuItems()
     {
         new PluginNavigationItem
         {
-            Title = "识别助手",
-            PageType = typeof(Views.Pages.OcrHelperPage)
+            Title = "我的页面",
+            PageType = typeof(MyPage)  // 你的WPF页面类型
         }
     };
 }
 ```
 
-主程序在启动时会构建菜单，并监听插件变化以重建菜单：`neo-bpsys-wpf/ViewModels/Windows/MainWindowViewModel.cs:114`。
+**在前台显示自定义控件：**
+```csharp
+public IEnumerable<PluginOverlayDescriptor> GetOverlayControls()
+{
+    return new[]
+    {
+        new PluginOverlayDescriptor
+        {
+            Id = "my_timer",
+            DisplayName = "倒计时器",
+            ControlFactory = () => new MyTimerControl(),
+            DefaultLeft = 100,
+            DefaultTop = 100,
+            TargetWindowType = FrontWindowType.GameDataWindow
+        }
+    };
+}
+```
 
-## 初始化与主窗体交互示例
+**访问主窗口和服务：**
+```csharp
+public void Initialize(IPluginContext context)
+{
+    // 访问主窗口
+    var mainWindow = context.MainWindow;
+    
+    // 获取服务
+    var settings = context.Services.GetService<ISettingsHostService>();
+    
+    // 订阅窗口加载事件
+    mainWindow.Loaded += (s, e) => 
+    {
+        MessageBox.Show("主窗口加载完成！");
+    };
+}
+```
 
-如果需要在主窗体加载后做动作（例如弹窗登录），可在 `Initialize` 中订阅 `MainWindow.Loaded`。参考 ASG 插件：
+---
 
-- 初始化入口：`plugins/ASG/AsgPlugin.cs:25`
-- 订阅主窗体 Loaded：`plugins/ASG/AsgPlugin.cs:30`
-- 弹窗并处理登录保存：`plugins/ASG/AsgPlugin.cs:59`、`plugins/ASG/AsgPlugin.cs:75`
+## 💡 实用示例
 
-## 应用启动时的插件发现与初始化
+### 示例插件项目
 
-- 启动阶段发现插件：`neo-bpsys-wpf/App.xaml.cs:39`、`neo-bpsys-wpf/App.xaml.cs:40`
-- 插件服务注册在宿主构建末尾：`neo-bpsys-wpf/App.xaml.cs:206`
-- 宿主启动后初始化插件：`neo-bpsys-wpf/App.xaml.cs:298`
+系统已经包含了几个示例插件，可以直接参考：
 
-核心管理器：
+| 插件名称 | 功能 | 学习重点 |
+|---------|------|---------|
+| **OverlaySample** | 前台控件示例 | 学习如何在前台显示自定义控件 |
+| **OCR** | OCR识别助手 | 学习如何添加菜单页面和服务 |
+| **ASG** | ASG数据统计 | 学习窗口事件和数据交互 |
 
-- 发现并过滤禁用插件：`neo-bpsys-wpf/Extensions/PluginManager.cs:30`、`neo-bpsys-wpf/Extensions/PluginManager.cs:53`
-- 初始化并触发变更事件：`neo-bpsys-wpf/Extensions/PluginManager.cs:91`、`neo-bpsys-wpf/Extensions/PluginManager.cs:101`
-- 热加载入口：`neo-bpsys-wpf/Extensions/PluginManager.cs:104`
+### 查看示例代码
+- 前台组件示例：`plugins/OverlaySample/OverlaySamplePlugin.cs`
+- 菜单页面示例：`plugins/OCR/OcrPlugin.cs`
+- 窗口交互示例：`plugins/ASG/AsgPlugin.cs`
 
-## 热加载与禁用
+---
 
-- 配置文件路径：`neo-bpsys-wpf.Core/AppConstants.cs:29`
-- 禁用列表字段：`neo-bpsys-wpf.Core/Models/Settings.cs:20`（`DisabledPlugins`）
+## 🔍 更多资源
+
+### 详细文档
+- **插件系统架构**：`docs/plugin-system/architecture.md`
+- **启动流程**：`docs/plugin-system/startup-flow.md`
+- **UI集成**：`docs/plugin-system/ui-integration.md`
+
+### 代码位置参考
+- 插件接口定义：`neo-bpsys-wpf.Core/Abstractions/Extensions/IPlugin.cs`
+- 插件管理器：`neo-bpsys-wpf/Extensions/PluginManager.cs`
+- 前台服务：`neo-bpsys-wpf/Services/FrontService.cs`
+- 应用启动：`neo-bpsys-wpf/App.xaml.cs`
+
+---
+
+## ❓ 遇到问题？
+
+1. 📖 先查看 [常见问题](plugins/faq.md)
+2. 🔍 检查系统自带的示例插件
+3. 📝 查看详细的接口文档
+
+**祝你开发愉快！** 🎉
 - 读取禁用列表：`neo-bpsys-wpf/Extensions/PluginManager.cs:114`
 - 扩展页命令（UI 操作）：
   - 热加载：`neo-bpsys-wpf/ViewModels/Pages/ExtensionPageViewModel.cs:21`

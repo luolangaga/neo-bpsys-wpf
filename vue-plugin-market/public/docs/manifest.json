@@ -15,6 +15,11 @@
         "path": "plugin-system/architecture.md"
       },
       {
+        "name": "dynamic-load-unload.md",
+        "type": "file",
+        "path": "plugin-system/dynamic-load-unload.md"
+      },
+      {
         "name": "index.md",
         "type": "file",
         "path": "plugin-system/index.md"
@@ -92,6 +97,11 @@
         "path": "plugins/interfaces.md"
       },
       {
+        "name": "overlay-controls.md",
+        "type": "file",
+        "path": "plugins/overlay-controls.md"
+      },
+      {
         "name": "project-setup.md",
         "type": "file",
         "path": "plugins/project-setup.md"
@@ -107,5 +117,10 @@
         "path": "plugins/ui-navigation.md"
       }
     ]
+  },
+  {
+    "name": "README.md",
+    "type": "file",
+    "path": "README.md"
   }
 ]

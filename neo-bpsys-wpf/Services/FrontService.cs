@@ -4,12 +4,14 @@ using neo_bpsys_wpf.AttachedBehaviors;
 using neo_bpsys_wpf.Controls;
 using neo_bpsys_wpf.Views.Windows;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using neo_bpsys_wpf.Core.Abstractions.Extensions;
 using neo_bpsys_wpf.Core.Abstractions.Services;
 using neo_bpsys_wpf.Core.Enums;
 using neo_bpsys_wpf.Core.Helpers;
@@ -45,6 +47,7 @@ public class FrontService : IFrontService
     private readonly IMessageBoxService _messageBoxService;
     private readonly ISharedDataService _sharedDataService;
     private readonly ISettingsHostService _settingsHostService;
+    private readonly Dictionary<string, (FrontWindowType WindowType, string CanvasName, FrameworkElement Element)> _pluginControls = new(StringComparer.OrdinalIgnoreCase);
 
     public FrontService(
         BpWindow bpWindow,
@@ -54,6 +57,7 @@ public class FrontService : IFrontService
         ScoreHunWindow scoreHunWindow,
         ScoreGlobalWindow scoreGlobalWindow,
         WidgetsWindow widgetsWindow,
+        PluginOverlayWindow pluginOverlayWindow,
         IMessageBoxService messageBoxService,
         ISharedDataService sharedDataService,
         ISettingsHostService settingsHostService
@@ -73,6 +77,7 @@ public class FrontService : IFrontService
         RegisterFrontWindowAndCanvas(FrontWindowType.WidgetsWindow, widgetsWindow, "MapBpCanvas");
         RegisterFrontWindowAndCanvas(FrontWindowType.WidgetsWindow, widgetsWindow, "BpOverViewCanvas");
         RegisterFrontWindowAndCanvas(FrontWindowType.WidgetsWindow, widgetsWindow, "MapV2Canvas");
+        RegisterFrontWindowAndCanvas(FrontWindowType.PluginOverlayWindow, pluginOverlayWindow);
 
         //注册分数统计界面的分数控件
         GlobalScoreControlsReg();
@@ -847,6 +852,145 @@ public class FrontService : IFrontService
         element.Opacity = 0;
         element.Tag = null;
         element.Visibility = Visibility.Hidden;
+    }
+
+    #endregion
+
+    #region 插件覆盖控件管理
+
+    /// <summary>
+    /// 添加插件覆盖控件到插件窗口
+    /// </summary>
+    /// <param name="descriptor">插件覆盖控件描述符</param>
+    public void AddPluginOverlayControl(PluginOverlayDescriptor descriptor)
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            // 检查配置中是否允许显示该控件
+            var config = _settingsHostService.Settings.PluginControlDisplayConfig;
+            if (config.ControlVisibility.TryGetValue(descriptor.Id, out var isVisible) && !isVisible)
+            {
+                // 配置中设置为不显示，跳过添加
+                return;
+            }
+
+            var targetWindowType = descriptor.TargetWindowType == FrontWindowType.ScoreWindow
+                ? FrontWindowType.ScoreGlobalWindow
+                : descriptor.TargetWindowType;
+
+            if (!FrontWindows.TryGetValue(targetWindowType, out var window)) return;
+            if (window.FindName(descriptor.CanvasName) is not Canvas canvas) return;
+            if (descriptor.ControlFactory == null) return;
+
+            var control = descriptor.ControlFactory.Invoke();
+            if (control is not FrameworkElement element) return;
+
+            // 确保标识符可用于位置存储与查找
+            element.Name = string.IsNullOrWhiteSpace(descriptor.Id)
+                ? $"Plugin_{Guid.NewGuid():N}"
+                : descriptor.Id;
+
+            // 绑定设计模式开关，复用现有前台设计模式体验
+            BindingOperations.SetBinding(element, DesignBehavior.IsDesignModeProperty,
+                new Binding("DataContext.IsDesignMode")
+                {
+                    Source = window,
+                    Mode = BindingMode.OneWay
+                });
+
+            ApplySavedOrDefaultPosition(targetWindowType, window, descriptor.CanvasName, element, descriptor);
+
+            // 覆盖旧实例，保证唯一性
+            RemovePluginOverlayControl(element.Name);
+
+            canvas.Children.Add(element);
+            _pluginControls[element.Name] = (targetWindowType, descriptor.CanvasName, element);
+
+            // 将画布纳入保存列表，确保位置持久化
+            if (!FrontCanvas.Contains((targetWindowType, descriptor.CanvasName)))
+                FrontCanvas.Add((targetWindowType, descriptor.CanvasName));
+        });
+    }
+    
+    /// <summary>
+    /// 移除插件覆盖控件
+    /// </summary>
+    /// <param name="controlId">控件ID</param>
+    public void RemovePluginOverlayControl(string controlId)
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            if (!_pluginControls.TryGetValue(controlId, out var entry)) return;
+            if (!FrontWindows.TryGetValue(entry.WindowType, out var window))
+            {
+                _pluginControls.Remove(controlId);
+                return;
+            }
+
+            if (window.FindName(entry.CanvasName) is Canvas canvas)
+            {
+                canvas.Children.Remove(entry.Element);
+            }
+
+            _pluginControls.Remove(controlId);
+        });
+    }
+    
+    /// <summary>
+    /// 清除所有插件覆盖控件
+    /// </summary>
+    public void ClearPluginOverlayControls()
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            foreach (var entry in _pluginControls.Values.ToList())
+            {
+                if (FrontWindows.TryGetValue(entry.WindowType, out var window) &&
+                    window.FindName(entry.CanvasName) is Canvas canvas)
+                {
+                    canvas.Children.Remove(entry.Element);
+                }
+            }
+
+            _pluginControls.Clear();
+        });
+    }
+
+    /// <summary>
+    /// 应用已保存的位置或使用默认位置
+    /// </summary>
+    private void ApplySavedOrDefaultPosition(FrontWindowType windowType, Window window, string canvasName, FrameworkElement element, PluginOverlayDescriptor descriptor)
+    {
+        var path = Path.Combine(AppConstants.AppDataPath, $"{window.GetType().Name}Config-{canvasName}.json");
+        var applied = false;
+
+        if (File.Exists(path))
+        {
+            try
+            {
+                var jsonContent = File.ReadAllText(path);
+                var positions = JsonSerializer.Deserialize<Dictionary<string, ElementInfo>>(jsonContent);
+                if (positions != null && positions.TryGetValue(element.Name, out var pos))
+                {
+                    if (pos.Width != null) element.Width = pos.Width.Value;
+                    if (pos.Height != null) element.Height = pos.Height.Value;
+                    if (pos.Left != null) Canvas.SetLeft(element, pos.Left.Value);
+                    if (pos.Top != null) Canvas.SetTop(element, pos.Top.Value);
+                    applied = true;
+                }
+            }
+            catch
+            {
+                // ignore malformed json
+            }
+        }
+
+        if (applied) return;
+
+        if (descriptor.DefaultWidth.HasValue) element.Width = descriptor.DefaultWidth.Value;
+        if (descriptor.DefaultHeight.HasValue) element.Height = descriptor.DefaultHeight.Value;
+        Canvas.SetLeft(element, descriptor.DefaultLeft);
+        Canvas.SetTop(element, descriptor.DefaultTop);
     }
 
     #endregion

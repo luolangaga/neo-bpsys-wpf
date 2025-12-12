@@ -139,6 +139,11 @@ public partial class App : Application
                     DataContext = sp.GetRequiredService<WidgetsWindowViewModel>(),
                 });
                 services.AddSingleton<WidgetsWindowViewModel>();
+                services.AddSingleton<PluginOverlayWindow>(sp => new PluginOverlayWindow()
+                {
+                    DataContext = sp.GetRequiredService<PluginOverlayWindowViewModel>(),
+                });
+                services.AddSingleton<PluginOverlayWindowViewModel>();
                 services.AddTransient<ScoreManualWindow>(sp => new ScoreManualWindow()
                 {
                     DataContext = sp.GetRequiredService<ScoreManualWindowViewModel>(),
@@ -197,6 +202,9 @@ public partial class App : Application
                     DataContext = sp.GetRequiredService<ExtensionPageViewModel>(),
                 });
                 services.AddSingleton<ExtensionPageViewModel>();
+                services.AddSingleton<PluginControlManagePage>(sp => new PluginControlManagePage(
+                    sp.GetRequiredService<PluginControlManagePageViewModel>()));
+                services.AddSingleton<PluginControlManagePageViewModel>();
                 services.AddSingleton<SettingPage>(sp =>
                     new SettingPage(sp.GetRequiredService<ITextSettingsNavigationService>())
                     {

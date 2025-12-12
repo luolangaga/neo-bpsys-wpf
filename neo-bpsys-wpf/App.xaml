@@ -35,6 +35,15 @@
             <!--  Images  -->
             <BitmapImage x:Key="surIcon" />
             <BitmapImage x:Key="hunIcon" />
+            <!-- 修复：补充前台管理页面分组边框样式 -->
+            <Style x:Key="WindowSettingGroupBorderStyle" TargetType="Border">
+                <Setter Property="Background" Value="#22000000" />
+                <Setter Property="CornerRadius" Value="12" />
+                <Setter Property="BorderBrush" Value="#44000000" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Padding" Value="24" />
+                <Setter Property="Margin" Value="0,12,0,0" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

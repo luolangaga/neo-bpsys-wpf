@@ -17,8 +17,8 @@ public partial class TalentPageViewModel : ViewModelBase, IRecipient<HighlightMe
         //Decorative constructor, used in conjunction with IsDesignTimeCreatable=True
     }
 
-    private readonly ISharedDataService _sharedDataService;
-    private readonly ISettingsHostService _settingsHostService;
+    private readonly ISharedDataService _sharedDataService = null!;
+    private readonly ISettingsHostService _settingsHostService = null!;
 
     public TalentPageViewModel(ISharedDataService sharedDataService, ISettingsHostService settingsHostService)
     {

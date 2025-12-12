@@ -344,6 +344,7 @@ public partial class MainWindowViewModel :
         FooterMenuItems.Clear();
         FooterMenuItems.Add(new("前台管理", SymbolRegular.ShareScreenStart24, typeof(FrontManagePage)));
         FooterMenuItems.Add(new("扩展功能", SymbolRegular.AppsAddIn24, typeof(ExtensionPage)));
+        FooterMenuItems.Add(new("插件控件", SymbolRegular.PlugConnected24, typeof(PluginControlManagePage)));
         FooterMenuItems.Add(new("设置", SymbolRegular.Settings24, typeof(SettingPage)));
 
         foreach (var item in _pluginManager.MenuNavItems)
