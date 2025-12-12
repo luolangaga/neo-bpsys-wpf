@@ -25,8 +25,10 @@ jobs:
 
     - name: Build
       run: |
+        if (Test-Path $env:BUILD_PATH) { Remove-Item -Recurse -Force $env:BUILD_PATH }
         mkdir .\build
-        dotnet publish ${{ env.PROJ_PATH }} -c Release -o ${{ env.BUILD_PATH }}
+        dotnet publish ${{ env.PROJ_PATH }} -c Release -r win-x64 --self-contained true `
+          /p:PublishSingleFile=false /p:PublishTrimmed=false -o ${{ env.BUILD_PATH }}
 
     - name: Pack Installer
       shell: cmd
