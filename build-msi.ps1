@@ -11,7 +11,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $root
-$AppName = 'bpsys-wpf-idvevent'
+$AppName = 'bp-idvevent'
 $AppIdName = ($AppName -replace '[^A-Za-z0-9]', '')
 if (-not $IdentityName) { $IdentityName = $AppIdName }
 if (-not $DisplayName) { $DisplayName = $AppName }

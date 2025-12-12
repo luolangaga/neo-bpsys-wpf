@@ -11,7 +11,7 @@ public static class AppConstants
     /// <summary>
     /// 应用程序名称
     /// </summary>
-    public const string AppName = "bpsys-wpf-idvevent";
+    public const string AppName = "bp-idvevent";
 
     /// <summary>
     /// 应用程序数据路径
