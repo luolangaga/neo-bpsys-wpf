@@ -126,7 +126,8 @@ begin
 end;
 function InitializeSetup: Boolean;
 begin
-Dependency_AddDotNet90Desktop;
+// 注释掉依赖检查：如果发布为自包含（包含 runtime 文件），不应再次提示安装 .NET 运行时
+// Dependency_AddDotNet90Desktop;
 Result := True;
 end;
 //卸载时删除用户数据
