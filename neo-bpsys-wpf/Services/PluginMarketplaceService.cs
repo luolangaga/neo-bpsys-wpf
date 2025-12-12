@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
+using neo_bpsys_wpf.Core;
 using neo_bpsys_wpf.Core.Abstractions.Services;
 
 namespace neo_bpsys_wpf.Services;
@@ -52,7 +53,7 @@ public class PluginMarketplaceService : IPluginMarketplaceService
             return (false, false, null, $"网络错误: {ex.Message}");
         }
         if (!res.IsSuccessStatusCode) return (false, false, null, $"下载失败: {(int)res.StatusCode}");
-        var dir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
+        var dir = AppConstants.PluginsPath;
         Directory.CreateDirectory(dir);
         var fileName = GetFileName(res.Content.Headers, plugin) ?? $"{plugin.Slug}.{plugin.Version}.dll";
         var filePath = Path.Combine(dir, fileName);

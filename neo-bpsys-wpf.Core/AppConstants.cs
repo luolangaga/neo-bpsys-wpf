@@ -27,6 +27,11 @@ public static class AppConstants
     /// 配置文件路径
     /// </summary>
     public static readonly string ConfigFilePath = Path.Combine(AppDataPath, "Config.json");
+
+    /// <summary>
+    /// 插件目录
+    /// </summary>
+    public static readonly string PluginsPath = Path.Combine(AppDataPath, "Plugins");
     
     /// <summary>
     /// 应用程序临时数据路径

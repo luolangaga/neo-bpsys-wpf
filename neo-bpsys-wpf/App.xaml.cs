@@ -36,7 +36,8 @@ public partial class App : Application
     private static IHost BuildHost()
     {
         _pluginManager = new Extensions.PluginManager();
-        var pluginDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
+        var pluginDir = AppConstants.PluginsPath;
+        Directory.CreateDirectory(pluginDir);
         _pluginManager.Discover(pluginDir);
 
         var builder = Host.CreateDefaultBuilder()
