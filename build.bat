@@ -10,8 +10,9 @@ set PROJ_PATH=".\neo-bpsys-wpf\neo-bpsys-wpf.csproj"
 if not exist %BUILD_PATH% (
 	mkdir %BUILD_PATH%
 )
-:: build
-dotnet publish %PROJ_PATH% -c Release -o %BUILD_PATH%
+:: build (self-contained, win-x64)
+dotnet publish %PROJ_PATH% -c Release -r win-x64 --self-contained true ^
+	/p:PublishSingleFile=false /p:PublishTrimmed=false -o %BUILD_PATH%
 
 :: pack installer
 :: set packer dir
