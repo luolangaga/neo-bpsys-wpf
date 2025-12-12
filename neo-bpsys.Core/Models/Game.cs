@@ -15,6 +15,5 @@ public partial class Game : ObservableObject
     public Team SurTeam { get; }
     public Team HunTeam { get; }
     [ObservableProperty] private GameProgress _progress;
-}
 
-佣兵   机械师   盲女   机械师   破伦   爱哭鬼
+}

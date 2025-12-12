@@ -7,8 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "neo-bpsys-wpf", "neo-bpsys-
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "neo-bpsys-wpf.Core", "neo-bpsys-wpf.Core\neo-bpsys-wpf.Core.csproj", "{59F7308F-5FFF-44A6-B708-90AFE4A72AED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "neo-bpsys-avalonia", "neo-bpsys-avalonia\neo-bpsys-avalonia.csproj", "{B1B9C7AA-8E6B-4E4B-9C1C-3B8A5E4B5E7F}"
-EndProject
+// Project "neo-bpsys-avalonia" removed temporarily to allow solution build in CI environment
+// Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "neo-bpsys-avalonia", "neo-bpsys-avalonia\neo-bpsys-avalonia.csproj", "{B1B9C7AA-8E6B-4E4B-9C1C-3B8A5E4B5E7F}"
+//EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "neo-bpsys.Core", "neo-bpsys.Core\neo-bpsys.Core.csproj", "{E2260E58-12E0-4F63-8C53-5C8FF5A6C1F8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bpsys.Plugin.ASG", "plugins\ASG\ASG.Plugin.csproj", "{A3F5A9E1-1C9B-4D9A-9D8F-7F7E6E6D5A11}"
@@ -35,10 +36,10 @@ Global
 		{E2260E58-12E0-4F63-8C53-5C8FF5A6C1F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2260E58-12E0-4F63-8C53-5C8FF5A6C1F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2260E58-12E0-4F63-8C53-5C8FF5A6C1F8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B1B9C7AA-8E6B-4E4B-9C1C-3B8A5E4B5E7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B1B9C7AA-8E6B-4E4B-9C1C-3B8A5E4B5E7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B1B9C7AA-8E6B-4E4B-9C1C-3B8A5E4B5E7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B1B9C7AA-8E6B-4E4B-9C1C-3B8A5E4B5E7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		//{B1B9C7AA-8E6B-4E4B-9C1C-3B8A5E4B5E7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		//{B1B9C7AA-8E6B-4E4B-9C1C-3B8A5E4B5E7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		//{B1B9C7AA-8E6B-4E4B-9C1C-3B8A5E4B5E7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		//{B1B9C7AA-8E6B-4E4B-9C1C-3B8A5E4B5E7F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A3F5A9E1-1C9B-4D9A-9D8F-7F7E6E6D5A11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A3F5A9E1-1C9B-4D9A-9D8F-7F7E6E6D5A11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3F5A9E1-1C9B-4D9A-9D8F-7F7E6E6D5A11}.Release|Any CPU.ActiveCfg = Release|Any CPU
