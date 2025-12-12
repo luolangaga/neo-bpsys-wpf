@@ -26,7 +26,8 @@ public class UpdaterService : IUpdaterService
     private const string Owner = "luolangaga";
     private const string Repo = "neo-bpsys-wpf";
     private const string GitHubApiBaseUrl = "https://api.github.com";
-    private const string InstallerFileName = "neo-bpsys-wpf_Installer.exe";
+    private const string InstallerFileName = "bp-idvevent_Installer.exe";
+    private const string InstallerFileNameLegacy = "neo-bpsys-wpf_Installer.exe";
     private readonly HttpClient _httpClient;
     private readonly IMessageBoxService _messageBoxService;
     private readonly IInfoBarService _infoBarService;
@@ -52,7 +53,12 @@ public class UpdaterService : IUpdaterService
         _downloader = new DownloadService(downloadOpt);
         _downloader.DownloadFileCompleted += OnDownloadFileCompletedAsync;
 
-        var fileName = Path.Combine(Path.GetTempPath(), "neo-bpsys-wpf_Installer.exe");
+        var fileName = Path.Combine(Path.GetTempPath(), InstallerFileName);
+        var legacyFile = Path.Combine(Path.GetTempPath(), InstallerFileNameLegacy);
+        if (!File.Exists(fileName) && File.Exists(legacyFile))
+        {
+            fileName = legacyFile;
+        }
         if (!File.Exists(fileName)) return;
         try
         {
@@ -70,7 +76,15 @@ public class UpdaterService : IUpdaterService
     public async Task DownloadUpdate(string mirror = "")
     {
         var fileName = Path.Combine(Path.GetTempPath(), InstallerFileName);
-        var downloadUrl = NewVersionInfo.Assets.First(a => a.Name == InstallerFileName).BrowserDownloadUrl;
+        // Prefer new installer name, fall back to legacy name if necessary
+        var asset = NewVersionInfo.Assets.FirstOrDefault(a => a.Name == InstallerFileName)
+                    ?? NewVersionInfo.Assets.FirstOrDefault(a => a.Name == InstallerFileNameLegacy);
+        if (asset == null)
+        {
+            await _messageBoxService.ShowErrorAsync("未在发布资产中找到安装程序文件。");
+            return;
+        }
+        var downloadUrl = asset.BrowserDownloadUrl;
         try
         {
             await _downloader.DownloadFileTaskAsync(mirror + downloadUrl, fileName);

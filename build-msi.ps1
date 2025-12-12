@@ -187,6 +187,6 @@ if ($Format -ieq 'msix') {
   Remove-Item (Join-Path $root 'harvest.wixobj') -ErrorAction SilentlyContinue
   Remove-Item (Join-Path $root 'product.wixobj') -ErrorAction SilentlyContinue
   & $candle -arch x64 -ext WixUIExtension -dSourceDir="$BuildPath" (Join-Path $installerDir 'harvest.wxs') (Join-Path $installerDir 'product.wxs')
-  & $light -ext WixUIExtension -loc $locPath (Join-Path $root 'harvest.wixobj') (Join-Path $root 'product.wixobj') -out (Join-Path $root 'build/neo-bpsys-wpf_Installer.msi')
-  Get-Item (Join-Path $root 'build/neo-bpsys-wpf_Installer.msi') | Format-List FullName,Length,LastWriteTime
+  & $light -ext WixUIExtension -loc $locPath (Join-Path $root 'harvest.wixobj') (Join-Path $root 'product.wixobj') -out (Join-Path $root 'build/bp-idvevent_Installer.msi')
+  Get-Item (Join-Path $root 'build/bp-idvevent_Installer.msi') | Format-List FullName,Length,LastWriteTime
 }

@@ -156,10 +156,19 @@ public class CanvasAdorner : Adorner
         if (string.IsNullOrEmpty(element.Name)) return;
         var canvas = GetParentCanvas(element);
         if (canvas == null) return;
-        Canvas.SetLeft(_textBlock, (Canvas.GetLeft(element) + element.ActualWidth / 2) - _textBlock.ActualWidth / 2);
-        Canvas.SetTop(_textBlock, Canvas.GetTop(element) - _textBlock.ActualHeight * 1.5);
+        var l = GetLeftOrZero(element) + element.Margin.Left;
+        var t = GetTopOrZero(element) + element.Margin.Top;
+        if (element.RenderTransform is TranslateTransform tt)
+        {
+            l += tt.X;
+            t += tt.Y;
+        }
+        Canvas.SetLeft(_textBlock, (l + element.ActualWidth / 2) - _textBlock.ActualWidth / 2);
+        Canvas.SetTop(_textBlock, t - _textBlock.ActualHeight * 1.5);
+        Panel.SetZIndex(_textBlock, 1000);
         canvas.Children.Add(_textBlock);
         element.SetValue(TagProperty, _textBlock);
+        MoveControlName(element);
     }
 
     /// <summary>
@@ -191,6 +200,48 @@ public class CanvasAdorner : Adorner
         return parent as Canvas;
     }
 
+    private static double GetLeftOrZero(FrameworkElement element)
+    {
+        var v = Canvas.GetLeft(element);
+        if (!double.IsNaN(v)) return v;
+
+        var canvas = GetParentCanvas(element);
+        if (canvas == null) return 0;
+
+        try
+        {
+            var p = element.TransformToAncestor(canvas).Transform(new Point(0, 0));
+            var l = p.X - element.Margin.Left;
+            if (element.RenderTransform is TranslateTransform tt) l -= tt.X;
+            return l;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    private static double GetTopOrZero(FrameworkElement element)
+    {
+        var v = Canvas.GetTop(element);
+        if (!double.IsNaN(v)) return v;
+
+        var canvas = GetParentCanvas(element);
+        if (canvas == null) return 0;
+
+        try
+        {
+            var p = element.TransformToAncestor(canvas).Transform(new Point(0, 0));
+            var t = p.Y - element.Margin.Top;
+            if (element.RenderTransform is TranslateTransform tt) t -= tt.Y;
+            return t;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
     /// <summary>
     /// 移动控件名称
     /// </summary>
@@ -200,8 +251,17 @@ public class CanvasAdorner : Adorner
         var canvas = GetParentCanvas(element);
         if (canvas == null) return;
         if (element.GetValue(TagProperty) is not TextBlock textBlock) return;
-        Canvas.SetLeft(textBlock, (Canvas.GetLeft(element) + element.ActualWidth / 2) - textBlock.ActualWidth / 2);
-        Canvas.SetTop(textBlock, Canvas.GetTop(element) - textBlock.ActualHeight * 1.5);
+
+        var l = GetLeftOrZero(element) + element.Margin.Left;
+        var t = GetTopOrZero(element) + element.Margin.Top;
+        if (element.RenderTransform is TranslateTransform tt)
+        {
+            l += tt.X;
+            t += tt.Y;
+        }
+
+        Canvas.SetLeft(textBlock, (l + element.ActualWidth / 2) - textBlock.ActualWidth / 2);
+        Canvas.SetTop(textBlock, t - textBlock.ActualHeight * 1.5);
     }
 
     //鼠标是否按下
@@ -223,14 +283,21 @@ public class CanvasAdorner : Adorner
         if (!_isMouseDown) return;
         if (sender is not Border) return;
 
-        var pos = e.GetPosition(null);
+        var parentCanvas = GetParentCanvas(_adornedElement);
+        if (parentCanvas == null) return;
+        var pos = e.GetPosition(parentCanvas);
         var dp = pos - _mouseDownPosition;
         var dx = dp.X;
         var dy = dp.Y;
 
         var isShiftPressed = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
 
-        if (Math.Abs(dx) + Math.Abs(dy) > DragStartThreshold) _hasDragged = true;
+        var movedDistance = Math.Abs(dx) + Math.Abs(dy);
+        if (movedDistance <= DragStartThreshold)
+        {
+            return;
+        }
+        _hasDragged = true;
 
         if (!isShiftPressed)
         {
@@ -240,9 +307,17 @@ public class CanvasAdorner : Adorner
         if (_selectedStartPositions == null || _selectedStartPositions.Count == 0)
         {
             _selectedStartPositions = new();
-            var left = double.IsNaN(Canvas.GetLeft(_adornedElement)) ? 0 : Canvas.GetLeft(_adornedElement);
-            var top = double.IsNaN(Canvas.GetTop(_adornedElement)) ? 0 : Canvas.GetTop(_adornedElement);
-            _selectedStartPositions[_adornedElement] = new Point(left, top);
+            var pc = GetParentCanvas(_adornedElement);
+            if (pc != null)
+            {
+                var l = GetLeftOrZero(_adornedElement);
+                var t = GetTopOrZero(_adornedElement);
+                _selectedStartPositions[_adornedElement] = new Point(l, t);
+            }
+            else
+            {
+                _selectedStartPositions[_adornedElement] = new Point(0, 0);
+            }
         }
 
         foreach (var kv in _selectedStartPositions)
@@ -278,8 +353,20 @@ public class CanvasAdorner : Adorner
 
             if (!DesignBehavior.GetIsDesignMode(element)) continue;
 
-            var otherLeft = Canvas.GetLeft(element);
-            var otherTop = Canvas.GetTop(element);
+            double otherLeft, otherTop;
+            if (!TryGetLeftTop(element, out otherLeft, out otherTop))
+            {
+                try
+                {
+                    var p = element.TransformToAncestor(parentCanvas).Transform(new Point(0, 0));
+                    otherLeft = p.X;
+                    otherTop = p.Y;
+                }
+                catch
+                {
+                    continue;
+                }
+            }
 
             // 水平方向对齐
             if (Math.Abs(newLeft - otherLeft) <= SnapDistance) // 左边对齐
@@ -318,10 +405,19 @@ public class CanvasAdorner : Adorner
         _selectedStartPositions = null;
 
         var isCtrlPressed = (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
-        if (isCtrlPressed && !_hasDragged)
+        if (isCtrlPressed)
         {
-            if (!SelectedElements.Add(_adornedElement)) SelectedElements.Remove(_adornedElement);
-            if (_adornedElement.Parent is Canvas c) RefreshSelectionVisuals(c);
+            var parentCanvas = GetParentCanvas(_adornedElement);
+            if (parentCanvas != null)
+            {
+                var releasePos = e.GetPosition(parentCanvas);
+                var movedDistance = Math.Abs(releasePos.X - _mouseDownPosition.X) + Math.Abs(releasePos.Y - _mouseDownPosition.Y);
+                if (movedDistance <= DragStartThreshold)
+                {
+                    if (!SelectedElements.Add(_adornedElement)) SelectedElements.Remove(_adornedElement);
+                    RefreshSelectionVisuals(parentCanvas);
+                }
+            }
         }
         HideDistanceGuides();
     }
@@ -335,10 +431,20 @@ public class CanvasAdorner : Adorner
     {
         if (sender is not Border border) return;
         _isMouseDown = true;
-        _mouseDownPosition = e.GetPosition(null);
-        _mouseDownControlPosition = new Point(
-            double.IsNaN(Canvas.GetLeft(_adornedElement)) ? 0 : Canvas.GetLeft(_adornedElement),
-            double.IsNaN(Canvas.GetTop(_adornedElement)) ? 0 : Canvas.GetTop(_adornedElement));
+        var parentCanvas = GetParentCanvas(_adornedElement);
+        if (parentCanvas == null) return;
+        _mouseDownPosition = e.GetPosition(parentCanvas);
+        try
+        {
+            var p0 = _adornedElement.TransformToAncestor(parentCanvas).Transform(new Point(0, 0));
+            _mouseDownControlPosition = new Point(p0.X, p0.Y);
+        }
+        catch
+        {
+            _mouseDownControlPosition = new Point(
+                GetLeftOrZero(_adornedElement),
+                GetTopOrZero(_adornedElement));
+        }
         _hasDragged = false;
         var isCtrlPressed = (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
         if (!isCtrlPressed)
@@ -349,15 +455,15 @@ public class CanvasAdorner : Adorner
             if (_adornedElement.Parent is Canvas c) RefreshSelectionVisuals(c);
         }
         _selectedStartPositions = new();
-        if (_adornedElement.Parent is Canvas parentCanvas)
+        if (parentCanvas is not null)
         {
             foreach (var child in parentCanvas.Children)
             {
                 if (child is FrameworkElement fe && SelectedElements.Contains(fe))
                 {
-                    var left = double.IsNaN(Canvas.GetLeft(fe)) ? 0 : Canvas.GetLeft(fe);
-                    var top = double.IsNaN(Canvas.GetTop(fe)) ? 0 : Canvas.GetTop(fe);
-                    _selectedStartPositions[fe] = new Point(left, top);
+                    var l = GetLeftOrZero(fe);
+                    var t = GetTopOrZero(fe);
+                    _selectedStartPositions[fe] = new Point(l, t);
                 }
             }
         }
@@ -407,27 +513,23 @@ public class CanvasAdorner : Adorner
 
         if (thumb?.HorizontalAlignment == HorizontalAlignment.Left)
         {
-            left = double.IsNaN(Canvas.GetLeft(_adornedElement))
-                ? 0
-                : Canvas.GetLeft(_adornedElement) + e.HorizontalChange;
+            left = GetLeftOrZero(_adornedElement) + e.HorizontalChange;
             width = actualWidth - e.HorizontalChange;
         }
         else
         {
-            left = Canvas.GetLeft(_adornedElement);
+            left = GetLeftOrZero(_adornedElement);
             width = actualWidth + e.HorizontalChange;
         }
 
         if (thumb?.VerticalAlignment == VerticalAlignment.Top)
         {
-            top = double.IsNaN(Canvas.GetTop(_adornedElement))
-                ? 0
-                : Canvas.GetTop(_adornedElement) + e.VerticalChange;
+            top = GetTopOrZero(_adornedElement) + e.VerticalChange;
             height = actualHeight - e.VerticalChange;
         }
         else
         {
-            top = Canvas.GetTop(_adornedElement);
+            top = GetTopOrZero(_adornedElement);
             height = actualHeight + e.VerticalChange;
         }
 
@@ -577,8 +679,7 @@ public class CanvasAdorner : Adorner
             if (child is not FrameworkElement other || other == _adornedElement) continue;
             if (!DesignBehavior.GetIsDesignMode(other)) continue;
 
-            var oLeft = Canvas.GetLeft(other);
-            var oTop = Canvas.GetTop(other);
+            if (!TryGetLeftTop(other, out var oLeft, out var oTop)) continue;
             var oRight = oLeft + other.ActualWidth;
             var oBottom = oTop + other.ActualHeight;
 
@@ -754,9 +855,8 @@ public class CanvasAdorner : Adorner
             if (child is not FrameworkElement otherElement || otherElement == _adornedElement) continue;
             if (!DesignBehavior.GetIsDesignMode(otherElement)) continue;
 
-            var otherLeft = Canvas.GetLeft(otherElement);
-            var otherTop = Canvas.GetTop(otherElement);
-
+            if (!TryGetLeftTop(otherElement, out var otherLeft, out var otherTop)) continue;
+            
             var distance = Distance(new Point(left, top), new Point(otherLeft, otherTop));
 
             if (distance <= SnapSizeDistance && distance < minDistance)
@@ -805,8 +905,7 @@ public class CanvasAdorner : Adorner
             if (child is not FrameworkElement element || element == _adornedElement) continue;
             if (!DesignBehavior.GetIsDesignMode(element)) continue;
 
-            var otherLeft = Canvas.GetLeft(element);
-            var otherTop = Canvas.GetTop(element);
+            if (!TryGetLeftTop(element, out var otherLeft, out var otherTop)) continue;
             var otherRight = otherLeft + element.ActualWidth;
             var otherBottom = otherTop + element.ActualHeight;
 
@@ -886,8 +985,18 @@ public class CanvasAdorner : Adorner
         {
             var el = kv.Key;
             var start = kv.Value;
-            var left = start.X;
-            var top = start.Y;
+            
+            // 验证start坐标是否有效，如果无效则使用实际Canvas坐标
+            double left = start.X;
+            double top = start.Y;
+            
+            // 如果start坐标无效（仅NaN视为无效），使用统一坐标获取方法
+            if (double.IsNaN(left) || double.IsNaN(top))
+            {
+                left = GetLeftOrZero(el);
+                top = GetTopOrZero(el);
+            }
+            
             var right = left + el.ActualWidth;
             var bottom = top + el.ActualHeight;
             if (left < groupLeft) groupLeft = left;
@@ -905,8 +1014,7 @@ public class CanvasAdorner : Adorner
             if (_selectedStartPositions.ContainsKey(element)) continue;
             if (!DesignBehavior.GetIsDesignMode(element)) continue;
 
-            var otherLeft = Canvas.GetLeft(element);
-            var otherTop = Canvas.GetTop(element);
+            if (!TryGetLeftTop(element, out var otherLeft, out var otherTop)) continue;
             var otherRight = otherLeft + element.ActualWidth;
             var otherBottom = otherTop + element.ActualHeight;
 
@@ -927,6 +1035,13 @@ public class CanvasAdorner : Adorner
 
     private static double Distance(Point p1, Point p2) =>
         Math.Sqrt(Math.Pow(p1.X - p2.X, 2) + Math.Pow(p1.Y - p2.Y, 2));
+
+    private static bool TryGetLeftTop(FrameworkElement element, out double left, out double top)
+    {
+        left = GetLeftOrZero(element);
+        top = GetTopOrZero(element);
+        return true;
+    }
 
     /// <summary>
     /// Thumbs样式工厂方法

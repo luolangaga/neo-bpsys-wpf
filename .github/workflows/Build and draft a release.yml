@@ -8,7 +8,7 @@ jobs:
       BUILD_PATH: ./build/neo-bpsys-wpf
       PROJ_PATH: ./neo-bpsys-wpf/neo-bpsys-wpf.csproj
       INSTALLER_GENERATE_DIR: ./InstallerGenerate
-      INSTALLER_OUTPUT: ./build/neo-bpsys-wpf_Installer.exe
+      INSTALLER_OUTPUT: ./build/bp-idvevent_Installer.exe
 
     runs-on: windows-latest
 
